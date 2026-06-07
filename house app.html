@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EvKirayə — Azərbaycan</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#C9A84C;--gold-light:#F2E4C0;--gold-dark:#8B6914;
+  --cream:#FAF7F0;--dark:#1A1714;--dark2:#2E2A24;--dark3:#423D35;
+  --muted:#8A8070;--border:rgba(201,168,76,0.22);--card-bg:#fff;
+  --success:#2D6A4F;--success-bg:#D8F3DC;--danger:#8B1A1A;--danger-bg:#FFE5E5;
+  --pending-bg:#FFF3CD;--pending:#856404;--radius:14px;
+  --shadow:0 4px 32px rgba(26,23,20,0.10);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--dark);min-height:100vh;}
+
+/* ── NAV ── */
+nav{background:var(--dark);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:64px;position:sticky;top:0;z-index:300;border-bottom:1px solid rgba(201,168,76,0.3);}
+.logo{font-family:'Playfair Display',serif;color:var(--gold);font-size:1.4rem;font-weight:700;}
+.logo span{color:#fff;}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{background:none;border:none;color:rgba(255,255,255,0.55);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;padding:8px 14px;border-radius:8px;cursor:pointer;transition:all .2s;letter-spacing:.02em;}
+.nav-tab:hover{color:var(--gold);background:rgba(201,168,76,.08);}
+.nav-tab.active{color:var(--gold);background:rgba(201,168,76,.15);}
+.nav-tab.admin-tab{border:1px solid rgba(201,168,76,.3);}
+
+/* sync pill */
+.sync-pill{display:flex;align-items:center;gap:6px;font-size:.75rem;color:rgba(255,255,255,.5);padding:4px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.12);}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#888;flex-shrink:0;transition:background .4s;}
+.sync-dot.live{background:#25D366;box-shadow:0 0 6px #25D36688;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+
+/* ── PAGES ── */
+.page{display:none;padding:2.5rem 2rem;max-width:1150px;margin:0 auto;}
+.page.active{display:block;}
+.page-title{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:.3rem;}
+.page-subtitle{color:var(--muted);font-size:.9rem;margin-bottom:2rem;}
+
+/* ── CARDS ── */
+.card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);padding:1.6rem;box-shadow:var(--shadow);}
+.card-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600;margin-bottom:1.2rem;color:var(--dark2);display:flex;align-items:center;gap:10px;}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-group.full{grid-column:1/-1;}
+label{font-size:.79rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+input[type=text],input[type=number],input[type=email],input[type=password],textarea,select{
+  width:100%;padding:10px 13px;background:var(--cream);border:1.5px solid var(--border);
+  border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--dark);outline:none;transition:border .2s;
+}
+input:focus,textarea:focus,select:focus{border-color:var(--gold);background:#fff;}
+textarea{resize:vertical;min-height:85px;}
+
+/* ── BUTTONS ── */
+.btn{padding:10px 22px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;border:none;display:inline-flex;align-items:center;gap:8px;}
+.btn-gold{background:var(--gold);color:#fff;}
+.btn-gold:hover{background:var(--gold-dark);transform:translateY(-1px);}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--dark);}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+.btn-success{background:var(--success);color:#fff;padding:7px 13px;font-size:.8rem;}
+.btn-danger{background:var(--danger);color:#fff;padding:7px 13px;font-size:.8rem;}
+.btn-whatsapp{background:#25D366;color:#fff;}
+.btn-whatsapp:hover{background:#1da851;}
+.btn-sm{padding:7px 13px;font-size:.8rem;}
+
+/* ── ADD HOUSE CTA BUTTON (prominent) ── */
+.btn-add-house{
+  background:linear-gradient(135deg,var(--gold),var(--gold-dark));
+  color:#fff;padding:12px 28px;border-radius:12px;font-size:.95rem;
+  font-weight:700;box-shadow:0 4px 18px rgba(201,168,76,.4);
+  border:none;cursor:pointer;font-family:'DM Sans',sans-serif;
+  display:inline-flex;align-items:center;gap:10px;transition:all .25s;
+  letter-spacing:.01em;
+}
+.btn-add-house:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(201,168,76,.55);}
+.btn-add-house:active{transform:translateY(0);}
+
+/* ── UPLOAD ── */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:2rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream);}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--gold);background:var(--gold-light);}
+.upload-zone p{color:var(--muted);font-size:.88rem;margin-top:6px;}
+.upload-zone strong{color:var(--dark);}
+.media-previews{display:flex;flex-wrap:wrap;gap:10px;margin-top:1rem;}
+.preview-wrap{position:relative;display:inline-block;cursor:pointer;}
+.preview-thumb{width:90px;height:90px;border-radius:10px;object-fit:cover;border:2px solid var(--border);display:block;transition:transform .15s;}
+.preview-wrap:hover .preview-thumb{transform:scale(1.04);}
+.preview-vid-thumb{width:90px;height:90px;border-radius:10px;border:2px solid var(--border);background:#111;display:flex;align-items:center;justify-content:center;font-size:2rem;flex-direction:column;gap:2px;color:#fff;}
+.preview-vid-thumb span{font-size:.6rem;opacity:.7;}
+.preview-remove{position:absolute;top:-6px;right:-6px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;z-index:2;}
+.preview-type-badge{position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,.6);color:#fff;font-size:.6rem;padding:2px 5px;border-radius:4px;}
+.media-existing-label{font-size:.75rem;color:var(--muted);margin-top:8px;margin-bottom:4px;font-weight:500;}
+
+/* ── SAVE INDICATOR ── */
+.save-indicator{display:inline-flex;align-items:center;gap:6px;font-size:.75rem;color:var(--success);background:var(--success-bg);padding:4px 10px;border-radius:20px;opacity:0;transition:opacity .3s;}
+.save-indicator.show{opacity:1;}
+
+/* ── FULLSCREEN LIGHTBOX ── */
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:2000;flex-direction:column;align-items:center;justify-content:center;}
+#lightbox.open{display:flex;}
+#lb-close{position:absolute;top:18px;right:22px;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;line-height:1;z-index:10;opacity:.8;transition:opacity .2s;}
+#lb-close:hover{opacity:1;}
+#lb-counter{position:absolute;top:22px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.6);font-size:.85rem;letter-spacing:.05em;}
+#lb-main{max-width:92vw;max-height:80vh;border-radius:10px;object-fit:contain;display:block;}
+#lb-main-video{max-width:92vw;max-height:80vh;border-radius:10px;display:none;outline:none;}
+#lb-prev,#lb-next{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.12);border:none;color:#fff;font-size:1.8rem;width:52px;height:52px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;z-index:10;}
+#lb-prev{left:16px;}#lb-next{right:16px;}
+#lb-prev:hover,#lb-next:hover{background:rgba(255,255,255,.25);}
+#lb-strip{display:flex;gap:8px;margin-top:14px;overflow-x:auto;max-width:90vw;padding:4px 0;}
+#lb-strip::-webkit-scrollbar{height:4px;}
+#lb-strip::-webkit-scrollbar-thumb{background:rgba(255,255,255,.3);border-radius:4px;}
+.lb-thumb{width:64px;height:48px;border-radius:7px;object-fit:cover;cursor:pointer;border:2px solid transparent;flex-shrink:0;transition:border .15s;}
+.lb-thumb.active{border-color:var(--gold);}
+.lb-vid-thumb{width:64px;height:48px;border-radius:7px;background:#222;display:flex;align-items:center;justify-content:center;font-size:1.3rem;cursor:pointer;border:2px solid transparent;flex-shrink:0;}
+.lb-vid-thumb.active{border-color:var(--gold);}
+#lb-caption{color:rgba(255,255,255,.55);font-size:.8rem;margin-top:8px;text-align:center;}
+
+/* ── CALENDAR ── */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.cal-month{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600;}
+.cal-nav{background:none;border:1.5px solid var(--border);border-radius:8px;padding:5px 11px;cursor:pointer;font-size:1rem;color:var(--dark);transition:all .2s;}
+.cal-nav:hover{border-color:var(--gold);color:var(--gold);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-day-label{text-align:center;font-size:.72rem;font-weight:600;color:var(--muted);padding:5px 0;text-transform:uppercase;letter-spacing:.04em;}
+.cal-day{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:7px;font-size:.85rem;font-weight:500;cursor:pointer;transition:all .15s;position:relative;border:1.5px solid transparent;}
+.cal-day:hover:not(.booked):not(.empty):not(.past){background:var(--gold-light);border-color:var(--gold);color:var(--gold-dark);}
+.cal-day.empty{cursor:default;}
+.cal-day.past{color:#ccc;cursor:not-allowed;}
+.cal-day.booked{background:#FFE5E5;color:var(--danger);cursor:not-allowed;font-weight:600;}
+.cal-day.booked::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--danger);}
+.cal-day.selected{background:var(--gold);color:#fff!important;border-color:var(--gold-dark);}
+.cal-day.in-range{background:var(--gold-light);color:var(--gold-dark);border-color:rgba(201,168,76,.3);}
+.cal-day.today{border-color:var(--gold);color:var(--gold-dark);font-weight:700;}
+.cal-legend{display:flex;gap:1.2rem;margin-top:1rem;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted);}
+.legend-dot{width:11px;height:11px;border-radius:3px;}
+
+/* ── BOOKING SUMMARY ── */
+.booking-summary{background:var(--cream);border-radius:11px;padding:1.1rem;border:1.5px solid var(--border);margin-top:1rem;}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:.9rem;}
+.summary-row.total{border-top:1.5px solid var(--border);margin-top:6px;padding-top:11px;font-weight:600;}
+
+/* ── INNER TABS ── */
+.inner-tabs{display:flex;gap:4px;margin-bottom:1.5rem;border-bottom:1.5px solid var(--border);}
+.inner-tab{padding:9px 16px;border:none;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.87rem;font-weight:500;color:var(--muted);border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .2s;}
+.inner-tab.active{color:var(--gold-dark);border-bottom-color:var(--gold);}
+
+/* ── RESERVATION CARD ── */
+.reservation-card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:1.1rem 1.4rem;display:flex;align-items:flex-start;gap:1.1rem;box-shadow:0 2px 12px rgba(26,23,20,.06);margin-bottom:12px;transition:box-shadow .2s;}
+.reservation-card:hover{box-shadow:0 4px 24px rgba(26,23,20,.12);}
+.res-img{width:76px;height:76px;border-radius:10px;background:var(--gold-light);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.8rem;overflow:hidden;}
+.res-img img{width:100%;height:100%;object-fit:cover;}
+.res-info{flex:1;}
+.res-name{font-weight:600;font-size:.97rem;margin-bottom:3px;}
+.res-dates{font-size:.82rem;color:var(--muted);margin-bottom:7px;}
+.res-actions{display:flex;gap:7px;flex-wrap:wrap;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:.76rem;font-weight:600;}
+.badge-pending{background:var(--pending-bg);color:var(--pending);}
+.badge-approved{background:var(--success-bg);color:var(--success);}
+.badge-cancelled{background:var(--danger-bg);color:var(--danger);}
+.res-amount{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;color:var(--gold);white-space:nowrap;}
+
+/* ── LAYOUT ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+.sections{display:flex;flex-direction:column;gap:1.4rem;}
+
+/* ── STATS ── */
+.stat-card{background:var(--dark);border-radius:var(--radius);padding:1.2rem;text-align:center;}
+.stat-num{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;color:var(--gold);}
+.stat-label{font-size:.77rem;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.05em;margin-top:4px;}
+
+/* ── HOUSE CARDS ── */
+.houses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.4rem;margin-bottom:2rem;}
+.house-card{background:#fff;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);transition:all .2s;}
+.house-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(26,23,20,.15);}
+.house-card-img{height:200px;background:var(--gold-light);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:3.5rem;cursor:pointer;}
+.house-card-img img,.house-card-img video{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.house-card-media-count{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.55);color:#fff;font-size:.72rem;padding:3px 8px;border-radius:12px;backdrop-filter:blur(4px);}
+.house-card-body{padding:1.1rem;}
+.house-card-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:4px;}
+.house-card-loc{font-size:.82rem;color:var(--muted);margin-bottom:8px;}
+.house-card-price{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--gold);}
+.house-card-price span{font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:400;color:var(--muted);}
+
+/* ── BOOKING PAGE GALLERY ── */
+.gallery-main{height:280px;border-radius:var(--radius);overflow:hidden;position:relative;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:5rem;cursor:pointer;margin-bottom:8px;}
+.gallery-main img,.gallery-main video{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;}
+.gallery-play-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.3);}
+.gallery-play-btn{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:1.6rem;}
+.gallery-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+.gallery-strip::-webkit-scrollbar{height:4px;}
+.gallery-strip::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+.g-thumb{width:76px;height:56px;border-radius:8px;object-fit:cover;cursor:pointer;border:2px solid transparent;transition:border .15s;flex-shrink:0;}
+.g-thumb.active{border-color:var(--gold);}
+.g-thumb:hover{border-color:var(--gold-light);}
+.g-vid-thumb{width:76px;height:56px;border-radius:8px;background:#1a1714;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;border:2px solid transparent;flex-shrink:0;transition:border .15s;}
+.g-vid-thumb.active{border-color:var(--gold);}
+.open-gallery-btn{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:8px;padding:5px 11px;font-size:.78rem;cursor:pointer;backdrop-filter:blur(4px);font-family:'DM Sans',sans-serif;font-weight:500;transition:background .2s;}
+.open-gallery-btn:hover{background:rgba(0,0,0,.8);}
+
+/* ── ADMIN LOGIN ── */
+.admin-login-wrap{min-height:60vh;display:flex;align-items:center;justify-content:center;}
+.admin-login-card{background:#fff;border-radius:20px;border:1px solid var(--border);padding:2.5rem;width:380px;box-shadow:var(--shadow);text-align:center;}
+.logo-big{font-family:'Playfair Display',serif;font-size:2rem;color:var(--gold);font-weight:700;margin-bottom:.4rem;}
+.lock-icon{font-size:3rem;margin-bottom:1rem;}
+
+/* ── ADMIN HOUSE ROW ── */
+.admin-house-row{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;margin-bottom:10px;}
+.admin-house-thumb{width:72px;height:56px;border-radius:9px;background:var(--gold-light);display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;overflow:hidden;}
+.admin-house-thumb img{width:100%;height:100%;object-fit:cover;}
+
+/* ── ADD HOUSE HERO BANNER (admin) ── */
+.add-house-hero{
+  background:linear-gradient(135deg,var(--dark2) 0%,var(--dark) 60%);
+  border:1.5px solid rgba(201,168,76,.35);
+  border-radius:var(--radius);padding:1.8rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1.5rem;margin-bottom:1.8rem;
+  box-shadow:0 6px 28px rgba(26,23,20,.2);
+}
+.add-house-hero-text h3{font-family:'Playfair Display',serif;font-size:1.3rem;color:#fff;margin-bottom:.3rem;}
+.add-house-hero-text p{font-size:.85rem;color:rgba(255,255,255,.5);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--dark2);color:#fff;padding:13px 20px;border-radius:11px;font-size:.88rem;display:flex;align-items:center;gap:9px;z-index:9999;box-shadow:0 8px 32px rgba(26,23,20,.3);transform:translateY(100px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);max-width:340px;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-left:4px solid #25D366;}
+.toast.gold{border-left:4px solid var(--gold);}
+.toast.error{border-left:4px solid var(--danger);}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,23,20,.65);display:none;align-items:center;justify-content:center;z-index:600;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:20px;padding:1.8rem;max-width:520px;width:94%;box-shadow:0 20px 60px rgba(0,0,0,.25);animation:popIn .3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{transform:scale(.85);opacity:0;}to{transform:scale(1);opacity:1;}}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:.4rem;}
+.modal-sub{color:var(--muted);font-size:.86rem;margin-bottom:1.4rem;}
+.modal-actions{display:flex;gap:10px;margin-top:1.4rem;}
+.add-house-modal{max-width:720px;max-height:92vh;overflow-y:auto;}
+
+/* ── MISC ── */
+.back-btn{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:.88rem;cursor:pointer;margin-bottom:1.2rem;background:none;border:none;font-family:'DM Sans',sans-serif;}
+.back-btn:hover{color:var(--gold);}
+.sync-banner{background:var(--dark2);color:var(--gold);font-size:.8rem;text-align:center;padding:6px;letter-spacing:.04em;display:none;}
+.sync-banner.show{display:block;}
+.idb-loading{text-align:center;color:var(--muted);padding:1rem;font-size:.85rem;}
+
+@media(max-width:700px){
+  .two-col,.three-col,.form-grid{grid-template-columns:1fr;}
+  .form-group.full{grid-column:1;}
+  nav{padding:0 1rem;}
+  .nav-tabs{gap:2px;}
+  .nav-tab{padding:6px 9px;font-size:.73rem;}
+  .page{padding:1.4rem .9rem;}
+  .houses-grid{grid-template-columns:1fr;}
+  #lb-prev{left:4px;}#lb-next{right:4px;}
+  .add-house-hero{flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<div class="sync-banner" id="sync-banner">🔄 Yeniləndi — başqa pəncərədən dəyişiklik gəldi</div>
+
+<nav>
+  <div class="logo">Ev<span>Kirayə</span></div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="sync-pill" id="sync-pill">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">Sinxronlaşır...</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showPage('evler')">🏠 Evlər</button>
+      <button class="nav-tab" onclick="showPage('booking')">📅 Rezervasiya</button>
+      <button class="nav-tab admin-tab" onclick="showPage('admin')">🔑 Admin</button>
+    </div>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" role="dialog" aria-label="Media baxışı">
+  <button id="lb-close" onclick="closeLightbox()">✕</button>
+  <div id="lb-counter"></div>
+  <button id="lb-prev" onclick="lbMove(-1)">‹</button>
+  <button id="lb-next" onclick="lbMove(1)">›</button>
+  <img id="lb-main" alt="" style="display:none;">
+  <video id="lb-main-video" controls playsinline></video>
+  <div id="lb-caption"></div>
+  <div id="lb-strip"></div>
+</div>
+
+<!-- WA MODAL -->
+<div class="modal-overlay" id="wa-modal">
+  <div class="modal">
+    <div style="font-size:2rem;margin-bottom:8px;">📲</div>
+    <div class="modal-title" id="wa-modal-title">WhatsApp ilə göndər</div>
+    <div class="modal-sub">Sahibkar nömrəsinə mesaj göndəriləcək.</div>
+    <div class="form-group">
+      <label>Sahibkarın WhatsApp nömrəsi</label>
+      <input type="text" id="wa-number" placeholder="+994501234567" value="+994501234567">
+    </div>
+    <div style="margin-top:1rem;background:var(--cream);border-radius:10px;padding:1rem;font-size:.85rem;color:var(--dark3);line-height:1.75;border:1px solid var(--border);" id="wa-preview"></div>
+    <div class="modal-actions">
+      <button class="btn btn-whatsapp" onclick="sendWhatsApp()" style="flex:1;justify-content:center;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+        WhatsApp Aç
+      </button>
+      <button class="btn btn-outline" onclick="closeWAModal()">Bağla</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD HOUSE MODAL -->
+<div class="modal-overlay" id="add-house-modal">
+  <div class="modal add-house-modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.3rem;">
+      <div class="modal-title" id="ah-modal-title">🏠 Yeni Ev Əlavə Et</div>
+      <button onclick="closeAddHouseModal()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1;">✕</button>
+    </div>
+    <div class="modal-sub">Ev məlumatlarını doldurun. Şəkillər yüklədikdən sonra saxlanır.</div>
+    <div class="form-grid">
+      <div class="form-group full"><label>Ev Adı</label><input type="text" id="ah-name" placeholder="məs. Bakı dəniz kənarı villa"></div>
+      <div class="form-group"><label>Günlük Qiymət (AZN)</label><input type="number" id="ah-price" placeholder="150" min="1"></div>
+      <div class="form-group"><label>Maks. Qonaq</label><input type="number" id="ah-guests" placeholder="6" min="1"></div>
+      <div class="form-group full"><label>Ünvan</label><input type="text" id="ah-location" placeholder="Bakı, Azərbaycan"></div>
+      <div class="form-group full"><label>Təsvir</label><textarea id="ah-desc" placeholder="Evin xüsusiyyətlərini yazın..."></textarea></div>
+      <div class="form-group full"><label>Rezervasiya Tipi</label>
+        <select id="ah-booktype"><option value="instant">⚡ Ani Rezervasiya</option><option value="request">📨 Sorğu ilə Rezervasiya</option></select>
+      </div>
+      <div class="form-group full">
+        <label>Mövcud Media <span id="ah-existing-count" style="font-size:.7rem;color:var(--gold);"></span></label>
+        <div class="media-previews" id="ah-existing-previews"></div>
+        <div style="margin-top:10px;">
+          <label>Yeni Şəkil / Video Əlavə Et (JPG, PNG, MP4, MOV)</label>
+          <div class="upload-zone" id="ah-upload-zone" onclick="document.getElementById('ah-file-input').click()">
+            <div style="font-size:2.2rem;">📁</div>
+            <p><strong>Klikləyin və ya sürüşdürün</strong></p>
+            <p>Şəkil: JPG, PNG, WEBP &nbsp;|&nbsp; Video: MP4, MOV, WEBM</p>
+          </div>
+          <input type="file" id="ah-file-input" multiple accept="image/*,video/*" onchange="handleAdminMedia(event)" style="display:none;">
+          <div class="media-previews" id="ah-media-previews"></div>
+        </div>
+      </div>
+    </div>
+    <input type="hidden" id="ah-edit-id">
+    <div class="modal-actions">
+      <button class="btn btn-gold" onclick="saveHouse()" style="flex:1;justify-content:center;" id="ah-save-btn">
+        <span id="ah-save-label">💾 Yadda Saxla</span>
+      </button>
+      <button class="btn btn-outline" onclick="closeAddHouseModal()">Ləğv et</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: EVLƏR -->
+<div class="page active" id="page-evler">
+  <div class="page-title">Kirayə Evlər</div>
+  <div class="page-subtitle">Sizə uyğun evi seçin — şəkilləri tam ölçüdə görün və rezervasiya edin.</div>
+  <div id="houses-loading" class="idb-loading" style="display:none;">🔄 Evlər yüklənir...</div>
+  <div class="houses-grid" id="houses-grid"></div>
+</div>
+
+<!-- PAGE: BOOKING -->
+<div class="page" id="page-booking">
+  <button class="back-btn" onclick="showPage('evler')">← Evlərə qayıt</button>
+  <div class="page-title" id="booking-house-name">Rezervasiya</div>
+  <div class="page-subtitle" id="booking-house-sub"></div>
+  <div id="booking-gallery" style="margin-bottom:1.5rem;display:none;">
+    <div class="gallery-main" id="gallery-main" onclick="openLightboxFromGallery()">
+      <span id="gallery-emoji" style="font-size:5rem;position:relative;z-index:1;">🏡</span>
+      <button class="open-gallery-btn" onclick="event.stopPropagation();openLightboxFromGallery()">🔍 Tam ekran</button>
+      <div class="gallery-play-overlay" id="gallery-play-overlay" style="display:none;" onclick="event.stopPropagation();openLightboxFromGallery()">
+        <div class="gallery-play-btn">▶</div>
+      </div>
+    </div>
+    <div class="gallery-strip" id="gallery-strip"></div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">📅 Mövcudluq Təqvimi</div>
+      <div class="cal-header">
+        <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+        <span class="cal-month" id="cal-month-label"></span>
+        <button class="cal-nav" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--gold);"></div>Seçildi</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fff;border:1px solid var(--gold);"></div>Boş</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#FFE5E5;"></div>Dolu</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#eee;"></div>Keçmiş</div>
+      </div>
+    </div>
+    <div class="sections">
+      <div class="card">
+        <div class="card-title">👤 Qonaq Məlumatları</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Ad</label><input type="text" id="guest-first" placeholder="Aytən"></div>
+          <div class="form-group"><label>Soyad</label><input type="text" id="guest-last" placeholder="Hüseynova"></div>
+          <div class="form-group full"><label>Telefon / WhatsApp</label><input type="text" id="guest-phone" placeholder="+994501234567"></div>
+          <div class="form-group full"><label>E-poçt</label><input type="email" id="guest-email" placeholder="ayten@mail.com"></div>
+          <div class="form-group"><label>Qonaq Sayı</label><input type="number" id="guest-count" value="2" min="1"></div>
+          <div class="form-group full"><label>Xüsusi İstəklər</label><textarea id="guest-requests" placeholder="Erkən giriş, uşaq çarpayısı..."></textarea></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🧾 Rezervasiya Xülasəsi</div>
+        <div id="no-dates-msg" style="color:var(--muted);font-size:.88rem;">← Tarix seçin</div>
+        <div id="booking-details" style="display:none;">
+          <div class="booking-summary">
+            <div class="summary-row"><span>📅 Giriş</span><strong id="sum-checkin">—</strong></div>
+            <div class="summary-row"><span>📅 Çıxış</span><strong id="sum-checkout">—</strong></div>
+            <div class="summary-row"><span>🌙 Gecə</span><strong id="sum-nights">—</strong></div>
+            <div class="summary-row"><span>💵 Qiymət</span><strong id="sum-rate">—</strong></div>
+            <div class="summary-row total"><span>Cəmi</span><strong id="sum-total" style="color:var(--gold);font-family:'Playfair Display',serif;font-size:1.15rem;">—</strong></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:1rem;flex-wrap:wrap;">
+            <button class="btn btn-gold" id="instant-btn" style="flex:1;justify-content:center;" onclick="submitBooking('instant')">⚡ Ani Rezervasiya</button>
+            <button class="btn btn-outline" id="request-btn" style="flex:1;justify-content:center;" onclick="submitBooking('request')">📨 Sorğu Göndər</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: ADMIN -->
+<div class="page" id="page-admin">
+  <div id="admin-login-wrap" class="admin-login-wrap">
+    <div class="admin-login-card">
+      <div class="lock-icon">🔐</div>
+      <div class="logo-big">Admin Paneli</div>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:1.4rem;">Daxil olmaq üçün şifrəni daxil edin</p>
+      <div class="form-group" style="text-align:left;margin-bottom:1rem;">
+        <label>Şifrə</label>
+        <input type="password" id="admin-pass" placeholder="••••" onkeydown="if(event.key==='Enter')adminLogin()">
+      </div>
+      <button class="btn btn-gold" style="width:100%;justify-content:center;" onclick="adminLogin()">🔑 Daxil ol</button>
+      <div id="admin-login-err" style="color:var(--danger);font-size:.82rem;margin-top:10px;display:none;">Şifrə yanlışdır!</div>
+    </div>
+  </div>
+
+  <div id="admin-panel" style="display:none;">
+    <!-- Header row -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <div class="page-title">Admin Paneli</div>
+        <div class="page-subtitle">Rezervasiyaları və evləri idarə edin.</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="adminLogout()">🚪 Çıx</button>
+    </div>
+
+    <!-- ★ PROMINENT ADD HOUSE BANNER ★ -->
+    <div class="add-house-hero">
+      <div class="add-house-hero-text">
+        <h3>🏠 Yeni Ev Əlavə Et</h3>
+        <p>Şəkillər, qiymət, ünvan — hamısını bu düymə ilə əlavə edin. Saxladıqdan sonra dərhal göstərilir.</p>
+      </div>
+      <button class="btn-add-house" onclick="openAddHouseModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Yeni Ev Əlavə Et
+      </button>
+    </div>
+
+    <div class="three-col" style="margin-bottom:1.5rem;">
+      <div class="stat-card"><div class="stat-num" id="stat-total">0</div><div class="stat-label">Ümumi Rezervasiya</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-pending">0</div><div class="stat-label">Gözləyən</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-revenue">0</div><div class="stat-label">Gəlir (AZN)</div></div>
+    </div>
+
+    <div class="inner-tabs">
+      <button class="inner-tab active" onclick="adminTab('reservations',this)">📋 Rezervasiyalar</button>
+      <button class="inner-tab" onclick="adminTab('houses',this)">🏠 Evlər (<span id="house-count-tab">0</span>)</button>
+    </div>
+
+    <div id="admin-res-panel">
+      <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;" id="filter-btns">
+        <button class="btn btn-outline btn-sm" onclick="filterRes('all',this)" style="border-color:var(--gold);color:var(--gold);">Hamısı</button>
+        <button class="btn btn-outline btn-sm" onclick="filterRes('pending',this)">⏳ Gözləyən</button>
+        <button class="btn btn-outline btn-sm" onclick="filterRes('approved',this)">✅ Təsdiqlənmiş</button>
+        <button class="btn btn-outline btn-sm" onclick="filterRes('cancelled',this)">❌ Ləğv edilmiş</button>
+      </div>
+      <div id="res-list"></div>
+    </div>
+
+    <div id="admin-houses-panel" style="display:none;">
+      <div id="admin-house-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════════
+const ADMIN_PASS = '1987';
+const OWNER_WA   = '+994501234567';
+const STORE_KEY  = 'evkiraye_data_v4';
+const IDB_NAME   = 'evkiraye_media';
+const IDB_STORE  = 'media';
+const IDB_VER    = 1;
+
+const MONTHS_AZ = ['Yanvar','Fevral','Mart','Aprel','May','İyun','İyul','Avqust','Sentyabr','Oktyabr','Noyabr','Dekabr'];
+const DAYS_AZ   = ['B','B.e','Ç.a','Ç','C.a','C','Ş'];
+
+let isAdmin = false;
+let selectedHouseId = null;
+let selStart = null, selEnd = null;
+let cal = { month: new Date().getMonth(), year: new Date().getFullYear() };
+let waMsg = '';
+let currentFilter = 'all';
+let lbMedia = [];
+let lbIndex = 0;
+
+// ahMedia: array of {type, src, name, idbKey?}
+// ahExistingMedia: existing media items for current edit (kept from house.media)
+let ahMedia = [];
+let ahExistingMedia = []; // kept existing items
+let ahRemovedExistingKeys = []; // idbKeys to delete on save
+
+// ═══════════════════════════════════════════════
+//  INDEXEDDB — persists large base64 media
+// ═══════════════════════════════════════════════
+let idb = null;
+
+function openIDB(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open(IDB_NAME, IDB_VER);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains(IDB_STORE)){
+        db.createObjectStore(IDB_STORE, {keyPath:'key'});
+      }
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function idbPut(key, value){
+  const tx = idb.transaction(IDB_STORE,'readwrite');
+  const store = tx.objectStore(IDB_STORE);
+  return new Promise((res,rej)=>{
+    const r = store.put({key, value});
+    r.onsuccess = ()=>res();
+    r.onerror   = ()=>rej(r.error);
+  });
+}
+
+async function idbGet(key){
+  const tx = idb.transaction(IDB_STORE,'readonly');
+  const store = tx.objectStore(IDB_STORE);
+  return new Promise((res,rej)=>{
+    const r = store.get(key);
+    r.onsuccess = ()=>res(r.result ? r.result.value : null);
+    r.onerror   = ()=>rej(r.error);
+  });
+}
+
+async function idbDelete(key){
+  const tx = idb.transaction(IDB_STORE,'readwrite');
+  const store = tx.objectStore(IDB_STORE);
+  return new Promise((res,rej)=>{
+    const r = store.delete(key);
+    r.onsuccess = ()=>res();
+    r.onerror   = ()=>rej(r.error);
+  });
+}
+
+// Hydrate all houses by loading their media srcs from IndexedDB
+async function hydrateHouses(houseList){
+  for(const h of houseList){
+    if(!h.media) h.media=[];
+    const hydrated = [];
+    for(const m of h.media){
+      if(m.idbKey){
+        const src = await idbGet(m.idbKey);
+        if(src) hydrated.push({...m, src});
+        else hydrated.push(m); // fallback if key missing
+      } else {
+        hydrated.push(m);
+      }
+    }
+    h.media = hydrated;
+  }
+  return houseList;
+}
+
+// Strip src before saving to localStorage (save only idbKey references)
+function dehydrateHouses(houseList){
+  return houseList.map(h=>({
+    ...h,
+    media: (h.media||[]).map(m=>{
+      if(m.idbKey) return {type:m.type, name:m.name, idbKey:m.idbKey};
+      // inline src (small or no idbKey) — keep as-is
+      return m;
+    })
+  }));
+}
+
+// ═══════════════════════════════════════════════
+//  APP STATE
+// ═══════════════════════════════════════════════
+let houses = [];
+let reservations = [];
+
+const DEFAULT_HOUSES = [
+  { id:'H001', name:'Bakı Dəniz Kənarı Villa', price:200, guests:8,
+    location:'Bakı, Biləcəri', desc:'Xəzər dənizinə nəzər salan möhtəşəm villa. 4 otaq, özəl hovuz, tam avadanlıqlı mətbəx.',
+    media:[], emoji:'🌊', bookingType:'request',
+    bookedDates:['2025-06-10','2025-06-11','2025-06-12','2025-07-05','2025-07-06'] },
+  { id:'H002', name:'Şəhər Mərkəzi Mənzil', price:120, guests:4,
+    location:'Bakı, Nərimanov', desc:'Şəhər mərkəzində, metro stansiyasına yaxın 2 otaqlı mənzil. WiFi, kondisioner.',
+    media:[], emoji:'🏙️', bookingType:'instant',
+    bookedDates:['2025-06-20','2025-06-21','2025-06-22'] },
+  { id:'H003', name:'Qəbələ Dağ Evi', price:180, guests:10,
+    location:'Qəbələ, Azərbaycan', desc:'Dağ mənzərəli, 5 otaqlı istirahət evi. Barbekü, həyət, meşəyə yaxın.',
+    media:[], emoji:'🏔️', bookingType:'request',
+    bookedDates:['2025-07-10','2025-07-11','2025-07-12'] }
+];
+
+const DEFAULT_RESERVATIONS = [
+  {id:'R001',houseId:'H001',guest:'Leyla Hüseynova',phone:'+994502345678',email:'leyla@mail.com',checkin:'2025-06-10',checkout:'2025-06-12',nights:2,total:400,status:'approved',requests:'Gec giriş',guests:3},
+  {id:'R002',houseId:'H002',guest:'Kamran Əliyev',phone:'+994703456789',email:'kamran@mail.com',checkin:'2025-06-20',checkout:'2025-06-22',nights:2,total:240,status:'pending',requests:'',guests:2},
+  {id:'R003',houseId:'H003',guest:'Səba Məmmədova',phone:'+994554567890',email:'seba@mail.com',checkin:'2025-07-10',checkout:'2025-07-13',nights:3,total:540,status:'pending',requests:'Uşaq çarpayısı',guests:5}
+];
+
+// ═══════════════════════════════════════════════
+//  SAVE / LOAD
+// ═══════════════════════════════════════════════
+function saveState(){
+  // Save metadata (without large src blobs) to localStorage
+  const dehydrated = dehydrateHouses(houses);
+  const payload = { houses: dehydrated, reservations, ts: Date.now() };
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(payload)); } catch(e){
+    console.warn('localStorage save failed', e);
+  }
+  if(bc) bc.postMessage({ type:'update' });
+}
+
+async function loadState(){
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){
+      const d = JSON.parse(raw);
+      if(d.houses) houses = d.houses;
+      if(d.reservations) reservations = d.reservations;
+      // Hydrate: load media srcs from IDB
+      houses = await hydrateHouses(houses);
+    } else {
+      houses = JSON.parse(JSON.stringify(DEFAULT_HOUSES));
+      reservations = JSON.parse(JSON.stringify(DEFAULT_RESERVATIONS));
+    }
+  } catch(e){
+    console.warn('loadState error', e);
+    houses = JSON.parse(JSON.stringify(DEFAULT_HOUSES));
+    reservations = JSON.parse(JSON.stringify(DEFAULT_RESERVATIONS));
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  BROADCAST (cross-tab sync)
+// ═══════════════════════════════════════════════
+let bc;
+try { bc = new BroadcastChannel('evkiraye_sync'); } catch(e){ bc = null; }
+if(bc){
+  bc.onmessage = async e => {
+    if(e.data && e.data.type === 'update'){
+      await loadState();
+      refreshVisiblePage();
+      flashSyncBanner();
+    }
+  };
+}
+
+function flashSyncBanner(){
+  const b = document.getElementById('sync-banner');
+  b.classList.add('show');
+  setTimeout(()=>b.classList.remove('show'), 3000);
+}
+function setSyncLive(){
+  document.getElementById('sync-dot').classList.add('live');
+  document.getElementById('sync-label').textContent = 'Canlı sinxron';
+}
+function refreshVisiblePage(){
+  const activePage = document.querySelector('.page.active');
+  if(!activePage) return;
+  if(activePage.id==='page-evler') renderHousesGrid();
+  if(activePage.id==='page-admin'&&isAdmin){ updateStats(); renderReservations(); renderAdminHouses(); }
+  if(activePage.id==='page-booking') renderCalendar();
+}
+
+// ═══════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════
+function showToast(msg, type='gold'){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast '+type; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+// ═══════════════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════════════
+function showPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const idx = {evler:0, booking:1, admin:2}[page];
+  if(idx !== undefined) document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  if(page==='evler') renderHousesGrid();
+  if(page==='booking') renderCalendar();
+  if(page==='admin') renderAdmin();
+}
+
+// ═══════════════════════════════════════════════
+//  LIGHTBOX
+// ═══════════════════════════════════════════════
+function openLightbox(mediaArr, startIndex){
+  lbMedia = mediaArr; lbIndex = startIndex || 0;
+  buildLbStrip(); showLbItem(lbIndex);
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+  const vid = document.getElementById('lb-main-video');
+  vid.pause(); vid.src = '';
+}
+function buildLbStrip(){
+  const strip = document.getElementById('lb-strip');
+  strip.innerHTML = '';
+  lbMedia.forEach((m,i)=>{
+    let el;
+    if(m.type==='image'){
+      el = document.createElement('img');
+      el.src = m.src; el.className = 'lb-thumb'; el.alt='';
+    } else {
+      el = document.createElement('div');
+      el.className = 'lb-vid-thumb'; el.textContent = '🎬';
+    }
+    el.onclick = ()=>{ lbIndex=i; showLbItem(i); };
+    strip.appendChild(el);
+  });
+}
+function showLbItem(i){
+  lbIndex = Math.max(0, Math.min(i, lbMedia.length-1));
+  const m = lbMedia[lbIndex];
+  const img = document.getElementById('lb-main');
+  const vid = document.getElementById('lb-main-video');
+  document.getElementById('lb-counter').textContent = (lbIndex+1)+' / '+lbMedia.length;
+  document.getElementById('lb-caption').textContent = m.type==='video' ? '🎬 Video' : '🖼 Şəkil '+(lbIndex+1);
+  const thumbs = document.getElementById('lb-strip').children;
+  for(let j=0;j<thumbs.length;j++) thumbs[j].classList.toggle('active', j===lbIndex);
+  if(m.type==='image'){
+    vid.pause(); vid.style.display='none';
+    img.src = m.src; img.style.display='block';
+  } else {
+    img.style.display='none';
+    vid.src = m.src; vid.style.display='block'; vid.load();
+  }
+  if(thumbs[lbIndex]) thumbs[lbIndex].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+}
+function lbMove(dir){
+  let next = lbIndex + dir;
+  if(next < 0) next = lbMedia.length-1;
+  if(next >= lbMedia.length) next = 0;
+  showLbItem(next);
+}
+document.addEventListener('keydown', e=>{
+  if(!document.getElementById('lightbox').classList.contains('open')) return;
+  if(e.key==='ArrowRight') lbMove(1);
+  if(e.key==='ArrowLeft') lbMove(-1);
+  if(e.key==='Escape') closeLightbox();
+});
+document.getElementById('lightbox').addEventListener('click', e=>{
+  if(e.target === document.getElementById('lightbox')) closeLightbox();
+});
+function openLightboxFromGallery(){
+  const h = houses.find(x=>x.id===selectedHouseId);
+  if(!h || !h.media || !h.media.length) return;
+  const curThumb = document.querySelector('.g-thumb.active, .g-vid-thumb.active');
+  let startIdx = 0;
+  if(curThumb) startIdx = parseInt(curThumb.dataset.idx||'0');
+  openLightbox(h.media, startIdx);
+}
+
+// ═══════════════════════════════════════════════
+//  HOUSES GRID (public)
+// ═══════════════════════════════════════════════
+function renderHousesGrid(){
+  const grid = document.getElementById('houses-grid');
+  grid.innerHTML = '';
+  if(!houses.length){
+    grid.innerHTML = '<div style="color:var(--muted);text-align:center;padding:3rem;grid-column:1/-1;">Hələ ev əlavə edilməyib.</div>';
+    return;
+  }
+  houses.forEach(h=>{
+    const card = document.createElement('div');
+    card.className = 'house-card';
+    const imgCount = (h.media||[]).filter(m=>m.type==='image').length;
+    const vidCount = (h.media||[]).filter(m=>m.type==='video').length;
+    let coverHtml = '';
+    if(h.media && h.media.length && h.media[0].src){
+      const first = h.media[0];
+      if(first.type==='image') coverHtml = `<img src="${first.src}" alt="${h.name}">`;
+      else coverHtml = `<video src="${first.src}" muted playsinline style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"></video><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"><div style="font-size:3rem;opacity:.9;">▶</div></div>`;
+    } else {
+      coverHtml = `<span style="position:relative;z-index:1;">${h.emoji||'🏠'}</span>`;
+    }
+    const mediaLabel = (imgCount+vidCount)>0 ? `<div class="house-card-media-count">📸 ${imgCount}${vidCount>0?' 🎬 '+vidCount:''}</div>` : '';
+    card.innerHTML = `
+      <div class="house-card-img" onclick="openHouseGalleryCard('${h.id}')">${coverHtml}${mediaLabel}</div>
+      <div class="house-card-body">
+        <div class="house-card-name">${h.name}</div>
+        <div class="house-card-loc">📍 ${h.location}</div>
+        <div style="font-size:.82rem;color:var(--dark3);margin-bottom:10px;line-height:1.5;">${h.desc.substring(0,90)}${h.desc.length>90?'...':''}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div class="house-card-price">${h.price} AZN <span>/ gecə</span></div>
+          <span class="badge" style="background:var(--gold-light);color:var(--gold-dark);">👥 ${h.guests}</span>
+        </div>
+        <button class="btn btn-gold" style="width:100%;justify-content:center;margin-top:12px;" onclick="selectHouse('${h.id}')">Rezervasiya Et →</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function openHouseGalleryCard(houseId){
+  const h = houses.find(x=>x.id===houseId);
+  if(!h || !h.media || !h.media.length) { selectHouse(houseId); return; }
+  openLightbox(h.media, 0);
+}
+
+// ═══════════════════════════════════════════════
+//  SELECT HOUSE → BOOKING PAGE
+// ═══════════════════════════════════════════════
+function selectHouse(houseId){
+  selectedHouseId = houseId;
+  selStart = null; selEnd = null;
+  cal.month = new Date().getMonth(); cal.year = new Date().getFullYear();
+  const h = houses.find(x=>x.id===houseId);
+  document.getElementById('booking-house-name').textContent = h.name;
+  document.getElementById('booking-house-sub').textContent = '📍 '+h.location+' · '+h.price+' AZN/gecə';
+
+  const gallerySection = document.getElementById('booking-gallery');
+  const galleryMain   = document.getElementById('gallery-main');
+  const strip         = document.getElementById('gallery-strip');
+  galleryMain.innerHTML = ''; strip.innerHTML = '';
+
+  if(h.media && h.media.length){
+    gallerySection.style.display = 'block';
+    renderGalleryItem(h.media[0], 0);
+    h.media.forEach((m,i)=>{
+      let th;
+      if(m.type==='image'){
+        th = document.createElement('img');
+        th.src = m.src; th.className = 'g-thumb'+(i===0?' active':'');
+        th.alt=''; th.dataset.idx = i;
+      } else {
+        th = document.createElement('div');
+        th.className = 'g-vid-thumb'+(i===0?' active':'');
+        th.textContent = '🎬'; th.dataset.idx = i;
+      }
+      th.onclick = ()=>{ renderGalleryItem(m, i); document.querySelectorAll('.g-thumb,.g-vid-thumb').forEach(x=>x.classList.remove('active')); th.classList.add('active'); };
+      strip.appendChild(th);
+    });
+  } else {
+    gallerySection.style.display = 'block';
+    galleryMain.innerHTML = `<span id="gallery-emoji" style="font-size:5rem;position:relative;z-index:1;">${h.emoji||'🏡'}</span>`;
+  }
+
+  if(!galleryMain.querySelector('.open-gallery-btn') && h.media && h.media.length){
+    const btn = document.createElement('button');
+    btn.className = 'open-gallery-btn'; btn.textContent = '🔍 Tam ekran';
+    btn.onclick = e=>{ e.stopPropagation(); openLightboxFromGallery(); };
+    galleryMain.appendChild(btn);
+  }
+
+  const instBtn = document.getElementById('instant-btn');
+  const reqBtn  = document.getElementById('request-btn');
+  if(h.bookingType==='instant'){ instBtn.style.display='flex'; reqBtn.style.display='none'; }
+  else if(h.bookingType==='request'){ instBtn.style.display='none'; reqBtn.style.display='flex'; }
+  else { instBtn.style.display='flex'; reqBtn.style.display='flex'; }
+
+  document.getElementById('no-dates-msg').style.display='block';
+  document.getElementById('booking-details').style.display='none';
+  showPage('booking');
+}
+
+function renderGalleryItem(m, idx){
+  const galleryMain = document.getElementById('gallery-main');
+  galleryMain.querySelectorAll('img:not(.g-thumb), video').forEach(el=>el.remove());
+  document.getElementById('gallery-play-overlay').style.display='none';
+  if(m.type==='image'){
+    const img = document.createElement('img');
+    img.src = m.src; img.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;inset:0;';
+    img.alt=''; galleryMain.insertBefore(img, galleryMain.firstChild);
+  } else {
+    const vid = document.createElement('video');
+    vid.src = m.src; vid.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;inset:0;';
+    vid.muted=true; vid.playsInline=true;
+    galleryMain.insertBefore(vid, galleryMain.firstChild);
+    document.getElementById('gallery-play-overlay').style.display='flex';
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  CALENDAR
+// ═══════════════════════════════════════════════
+function renderCalendar(){
+  const grid  = document.getElementById('cal-grid');
+  const label = document.getElementById('cal-month-label');
+  if(!grid) return;
+  grid.innerHTML = '';
+  label.textContent = MONTHS_AZ[cal.month]+' '+cal.year;
+  DAYS_AZ.forEach(d=>{ const el=document.createElement('div');el.className='cal-day-label';el.textContent=d;grid.appendChild(el); });
+  const h = houses.find(x=>x.id===selectedHouseId);
+  const bookedDates = h ? h.bookedDates : [];
+  const firstDay = new Date(cal.year, cal.month, 1).getDay();
+  const days = new Date(cal.year, cal.month+1, 0).getDate();
+  const today = new Date(); today.setHours(0,0,0,0);
+  for(let i=0;i<firstDay;i++){ const el=document.createElement('div');el.className='cal-day empty';grid.appendChild(el); }
+  for(let d=1;d<=days;d++){
+    const el = document.createElement('div'); el.className='cal-day'; el.textContent=d;
+    const date = new Date(cal.year,cal.month,d); date.setHours(0,0,0,0);
+    const ds = fmtDate(date);
+    const isPast=date<today, isBooked=bookedDates.includes(ds);
+    const isStart=selStart&&ds===fmtDate(selStart), isEnd=selEnd&&ds===fmtDate(selEnd);
+    const inRange=selStart&&selEnd&&date>selStart&&date<selEnd;
+    if(isPast) el.classList.add('past');
+    else if(isBooked) el.classList.add('booked');
+    if(date.getTime()===today.getTime()) el.classList.add('today');
+    if(isStart||isEnd) el.classList.add('selected');
+    else if(inRange) el.classList.add('in-range');
+    if(!isPast&&!isBooked) el.onclick=()=>pickDate(date);
+    grid.appendChild(el);
+  }
+}
+function pickDate(date){
+  if(!selStart||(selStart&&selEnd)){ selStart=date; selEnd=null; }
+  else {
+    if(date<=selStart){ selStart=date; selEnd=null; }
+    else {
+      const h=houses.find(x=>x.id===selectedHouseId);
+      let d=new Date(selStart); d.setDate(d.getDate()+1); let blocked=false;
+      while(d<date){ if(h&&h.bookedDates.includes(fmtDate(d))){blocked=true;break;} d.setDate(d.getDate()+1); }
+      if(blocked){ showToast('⚠️ Seçilən aralıqda dolu günlər var.','error'); return; }
+      selEnd=date; updateSummary();
+    }
+  }
+  renderCalendar();
+}
+function changeMonth(dir){ cal.month+=dir; if(cal.month>11){cal.month=0;cal.year++;} if(cal.month<0){cal.month=11;cal.year--;} renderCalendar(); }
+function fmtDate(d){ if(!d)return ''; return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function prettyDate(d){ if(!d)return '—'; return d.toLocaleDateString('az-Latn-AZ',{day:'numeric',month:'long',year:'numeric'}); }
+function updateSummary(){
+  if(!selStart||!selEnd) return;
+  const h=houses.find(x=>x.id===selectedHouseId);
+  const nights=Math.round((selEnd-selStart)/(86400000));
+  const total=nights*(h?h.price:0);
+  document.getElementById('no-dates-msg').style.display='none';
+  document.getElementById('booking-details').style.display='block';
+  document.getElementById('sum-checkin').textContent=prettyDate(selStart);
+  document.getElementById('sum-checkout').textContent=prettyDate(selEnd);
+  document.getElementById('sum-nights').textContent=nights+' gecə';
+  document.getElementById('sum-rate').textContent=(h?h.price:0)+' AZN/gecə';
+  document.getElementById('sum-total').textContent=total+' AZN';
+}
+
+// ═══════════════════════════════════════════════
+//  SUBMIT BOOKING
+// ═══════════════════════════════════════════════
+function submitBooking(type){
+  if(!selStart||!selEnd){ showToast('Zəhmət olmasa tarixləri seçin.','error'); return; }
+  const first=document.getElementById('guest-first').value.trim();
+  const last=document.getElementById('guest-last').value.trim();
+  const phone=document.getElementById('guest-phone').value.trim();
+  if(!first||!last||!phone){ showToast('Ad, soyad və telefon daxil edin.','error'); return; }
+  const h=houses.find(x=>x.id===selectedHouseId);
+  const nights=Math.round((selEnd-selStart)/86400000);
+  const total=nights*(h?h.price:0);
+  const newRes={
+    id:'R'+String(Date.now()).slice(-6),
+    houseId:selectedHouseId,
+    guest:first+' '+last, phone,
+    email:document.getElementById('guest-email').value,
+    checkin:fmtDate(selStart), checkout:fmtDate(selEnd),
+    nights, total,
+    guests:parseInt(document.getElementById('guest-count').value)||1,
+    requests:document.getElementById('guest-requests').value,
+    status:type==='instant'?'approved':'pending'
+  };
+  let d=new Date(selStart);
+  while(d<selEnd){ if(h)h.bookedDates.push(fmtDate(d)); d.setDate(d.getDate()+1); }
+  reservations.unshift(newRes);
+  saveState(); updateStats();
+  const msg=type==='instant'
+    ?`✅ *Ani Rezervasiya Təsdiqləndi!*\n\n🏠 *${h?h.name:'Ev'}*\n👤 Qonaq: ${newRes.guest}\n📞 Telefon: ${phone}\n📅 Giriş: ${prettyDate(selStart)}\n📅 Çıxış: ${prettyDate(selEnd)}\n🌙 Gecə: ${nights}\n💰 Cəmi: ${total} AZN\n👥 Qonaq sayı: ${newRes.guests}\n📝 Xüsusi istək: ${newRes.requests||'Yoxdur'}\n\n_Zəhmət olmasa ödəniş linkini göndərin._`
+    :`📨 *Yeni Rezervasiya Sorğusu!*\n\n🏠 *${h?h.name:'Ev'}*\n👤 Qonaq: ${newRes.guest}\n📞 Telefon: ${phone}\n📅 Giriş: ${prettyDate(selStart)}\n📅 Çıxış: ${prettyDate(selEnd)}\n🌙 Gecə: ${nights}\n💰 Cəmi: ${total} AZN\n👥 Qonaq sayı: ${newRes.guests}\n📝 Xüsusi istək: ${newRes.requests||'Yoxdur'}\n\n_Zəhmət olmasa təsdiqləyin._`;
+  const num = OWNER_WA.replace(/[^0-9]/g,'');
+  setTimeout(()=>{ window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank'); }, 600);
+  selStart=null; selEnd=null;
+  renderCalendar();
+  document.getElementById('no-dates-msg').style.display='block';
+  document.getElementById('booking-details').style.display='none';
+  ['guest-first','guest-last','guest-phone','guest-email','guest-requests'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('guest-count').value='2';
+  showToast(type==='instant'?'✅ Rezervasiya edildi! WhatsApp açılır...':'📨 Sorğu göndərildi! WhatsApp açılır...','success');
+}
+
+// ═══════════════════════════════════════════════
+//  ADMIN
+// ═══════════════════════════════════════════════
+function adminLogin(){
+  if(document.getElementById('admin-pass').value===ADMIN_PASS){
+    isAdmin=true;
+    document.getElementById('admin-login-wrap').style.display='none';
+    document.getElementById('admin-panel').style.display='block';
+    document.getElementById('admin-pass').value='';
+    document.getElementById('admin-login-err').style.display='none';
+    renderAdmin();
+  } else {
+    document.getElementById('admin-login-err').style.display='block';
+    document.getElementById('admin-pass').value='';
+    document.getElementById('admin-pass').focus();
+  }
+}
+function adminLogout(){
+  isAdmin=false;
+  document.getElementById('admin-login-wrap').style.display='flex';
+  document.getElementById('admin-panel').style.display='none';
+}
+function renderAdmin(){
+  if(!isAdmin){ document.getElementById('admin-login-wrap').style.display='flex'; document.getElementById('admin-panel').style.display='none'; return; }
+  updateStats(); renderReservations(); renderAdminHouses();
+}
+function adminTab(tab, el){
+  document.querySelectorAll('.inner-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('admin-res-panel').style.display=tab==='reservations'?'block':'none';
+  document.getElementById('admin-houses-panel').style.display=tab==='houses'?'block':'none';
+  if(tab==='houses') renderAdminHouses();
+}
+
+// ═══════════════════════════════════════════════
+//  RESERVATIONS
+// ═══════════════════════════════════════════════
+function renderReservations(filter){
+  if(filter) currentFilter=filter;
+  const list=document.getElementById('res-list');
+  const items=currentFilter==='all'?reservations:reservations.filter(r=>r.status===currentFilter);
+  list.innerHTML='';
+  if(!items.length){ list.innerHTML='<div style="text-align:center;color:var(--muted);padding:2rem;">Rezervasiya tapılmadı.</div>'; return; }
+  items.forEach(r=>{
+    const h=houses.find(x=>x.id===r.houseId);
+    const imgHtml=h&&h.media&&h.media.length&&h.media[0].src&&h.media[0].type==='image'?`<img src="${h.media[0].src}">`:(h?`<span>${h.emoji||'🏠'}</span>`:'<span>🏠</span>');
+    const sc={approved:'badge-approved',pending:'badge-pending',cancelled:'badge-cancelled'}[r.status];
+    const sl={approved:'✅ Təsdiqlənmiş',pending:'⏳ Gözləyən',cancelled:'❌ Ləğv edilmiş'}[r.status];
+    const card=document.createElement('div'); card.className='reservation-card';
+    card.innerHTML=`
+      <div class="res-img">${imgHtml}</div>
+      <div class="res-info">
+        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:3px;">
+          <div class="res-name">${r.guest}</div><span class="badge ${sc}">${sl}</span>
+          ${h?`<span style="font-size:.78rem;color:var(--muted);">${h.name}</span>`:''}
+        </div>
+        <div class="res-dates">📅 ${r.checkin} → ${r.checkout} &nbsp;·&nbsp; 🌙 ${r.nights} gecə &nbsp;·&nbsp; 👥 ${r.guests} nəfər</div>
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:8px;">📞 ${r.phone}${r.email?' &nbsp;|&nbsp; ✉️ '+r.email:''}${r.requests?' &nbsp;|&nbsp; 📝 '+r.requests:''}</div>
+        <div class="res-actions">
+          ${r.status==='pending'?`<button class="btn btn-success btn-sm" onclick="changeStatus('${r.id}','approved')">✅ Təsdiqlə</button><button class="btn btn-danger btn-sm" onclick="changeStatus('${r.id}','cancelled')">❌ Ləğv et</button>`:''}
+          ${r.status==='approved'?`<button class="btn btn-whatsapp btn-sm" onclick="sendPaymentLink('${r.id}')">💸 Ödəniş Linki</button>`:''}
+          <button class="btn btn-outline btn-sm" onclick="notifyGuest('${r.id}')">💬 Qonağa Yaz</button>
+        </div>
+      </div>
+      <div class="res-amount">${r.total} AZN</div>`;
+    list.appendChild(card);
+  });
+}
+function filterRes(filter, el){
+  document.querySelectorAll('#filter-btns .btn').forEach(b=>{ b.style.borderColor=''; b.style.color=''; });
+  el.style.borderColor='var(--gold)'; el.style.color='var(--gold)';
+  renderReservations(filter);
+}
+function changeStatus(id, status){
+  const r=reservations.find(x=>x.id===id); if(!r)return;
+  r.status=status; saveState(); updateStats(); renderReservations();
+  const h=houses.find(x=>x.id===r.houseId);
+  if(status==='approved'){
+    const msg=`✅ *Rezervasiyanız Təsdiqləndi!*\n\n🏠 ${h?h.name:'Ev'}\n👤 ${r.guest}\n📅 ${r.checkin} → ${r.checkout}\n💰 Cəmi: ${r.total} AZN\n\n_Ödəniş linki tezliklə göndəriləcək._`;
+    openWAModal(msg,'✅ Qonağı məlumatlandır',r.phone);
+  } else { showToast('Rezervasiya ləğv edildi.','error'); }
+}
+function sendPaymentLink(id){
+  const r=reservations.find(x=>x.id===id);
+  const h=houses.find(x=>x.id===r.houseId);
+  const link='https://pay.evkiraye.az/booking/'+r.id;
+  const msg=`💳 *Ödəniş Linki*\n\n🏠 ${h?h.name:'Ev'}\n📅 ${r.checkin} → ${r.checkout}\n💰 Məbləğ: ${r.total} AZN\n\nZəhmət olmasa 24 saat ərzində ödəyin:\n🔗 ${link}\n\n_Sizi gözləyirik!_`;
+  openWAModal(msg,'💸 Ödəniş Linkini Göndər',r.phone);
+}
+function notifyGuest(id){
+  const r=reservations.find(x=>x.id===id);
+  const h=houses.find(x=>x.id===r.houseId);
+  const msg=`👋 Salam ${r.guest.split(' ')[0]}!\n\nBu, *${h?h.name:'Ev'}* idarəsindən mesajdır.\nRezrvasiyanız: 📅 ${r.checkin} → ${r.checkout}\n\nHər hansı sualınız olarsa, əlaqə saxlayın!`;
+  openWAModal(msg,'💬 Qonağa Mesaj',r.phone);
+}
+function updateStats(){
+  document.getElementById('stat-total').textContent=reservations.length;
+  document.getElementById('stat-pending').textContent=reservations.filter(r=>r.status==='pending').length;
+  document.getElementById('stat-revenue').textContent=reservations.filter(r=>r.status==='approved').reduce((s,r)=>s+r.total,0).toLocaleString();
+  document.getElementById('house-count-tab').textContent=houses.length;
+}
+
+// ═══════════════════════════════════════════════
+//  ADMIN HOUSE MANAGEMENT
+// ═══════════════════════════════════════════════
+function renderAdminHouses(){
+  const list=document.getElementById('admin-house-list');
+  list.innerHTML='';
+  if(!houses.length){
+    list.innerHTML=`<div style="text-align:center;color:var(--muted);padding:2rem;">
+      <div style="font-size:2.5rem;margin-bottom:1rem;">🏠</div>
+      <div>Hələ ev əlavə edilməyib.</div>
+      <button class="btn btn-gold" style="margin-top:1rem;" onclick="openAddHouseModal()">+ İlk evi əlavə et</button>
+    </div>`;
+    return;
+  }
+  houses.forEach(h=>{
+    const row=document.createElement('div'); row.className='admin-house-row';
+    const imgHtml=h.media&&h.media.length&&h.media[0].src&&h.media[0].type==='image'
+      ?`<img src="${h.media[0].src}" style="width:100%;height:100%;object-fit:cover;">`
+      :`<span>${h.emoji||'🏠'}</span>`;
+    const resCount=reservations.filter(r=>r.houseId===h.id).length;
+    const mediaCount=(h.media||[]).length;
+    row.innerHTML=`
+      <div class="admin-house-thumb">${imgHtml}</div>
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:.97rem;margin-bottom:3px;">${h.name}</div>
+        <div style="font-size:.82rem;color:var(--muted);">📍 ${h.location} &nbsp;·&nbsp; 💰 ${h.price} AZN/gecə &nbsp;·&nbsp; 📋 ${resCount} rezervasiya &nbsp;·&nbsp; 🖼 ${mediaCount} media</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:3px;">${h.bookingType==='instant'?'⚡ Ani':'📨 Sorğu ilə'}</div>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;">
+        ${mediaCount>0?`<button class="btn btn-outline btn-sm" onclick="adminPreviewMedia('${h.id}')">🖼 Bax</button>`:''}
+        <button class="btn btn-outline btn-sm" onclick="editHouse('${h.id}')">✏️ Düzəlt</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteHouse('${h.id}')">🗑️ Sil</button>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+function adminPreviewMedia(houseId){
+  const h=houses.find(x=>x.id===houseId);
+  if(!h||!h.media||!h.media.length) return;
+  openLightbox(h.media, 0);
+}
+
+// ═══════════════════════════════════════════════
+//  ADD/EDIT HOUSE MODAL
+// ═══════════════════════════════════════════════
+function openAddHouseModal(editId){
+  ahMedia = [];
+  ahExistingMedia = [];
+  ahRemovedExistingKeys = [];
+  document.getElementById('ah-media-previews').innerHTML='';
+  document.getElementById('ah-existing-previews').innerHTML='';
+  document.getElementById('ah-existing-count').textContent='';
+
+  if(editId){
+    const h=houses.find(x=>x.id===editId);
+    document.getElementById('ah-modal-title').textContent='✏️ Evi Düzəlt';
+    document.getElementById('ah-name').value=h.name;
+    document.getElementById('ah-price').value=h.price;
+    document.getElementById('ah-guests').value=h.guests;
+    document.getElementById('ah-location').value=h.location;
+    document.getElementById('ah-desc').value=h.desc;
+    document.getElementById('ah-booktype').value=h.bookingType;
+    document.getElementById('ah-edit-id').value=editId;
+    // Copy existing media — keep all, user can remove individually
+    ahExistingMedia = (h.media||[]).map((m,i)=>({...m, _existingIdx:i}));
+    if(ahExistingMedia.length){
+      document.getElementById('ah-existing-count').textContent=`(${ahExistingMedia.length} mövcud)`;
+      ahExistingMedia.forEach((m,i)=>addExistingPreview(m, i));
+    }
+  } else {
+    document.getElementById('ah-modal-title').textContent='🏠 Yeni Ev Əlavə Et';
+    ['ah-name','ah-desc','ah-location'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('ah-price').value='';
+    document.getElementById('ah-guests').value='';
+    document.getElementById('ah-booktype').value='instant';
+    document.getElementById('ah-edit-id').value='';
+  }
+  document.getElementById('add-house-modal').classList.add('open');
+}
+
+function addExistingPreview(item, idx){
+  const container=document.getElementById('ah-existing-previews');
+  const wrap=document.createElement('div'); wrap.className='preview-wrap'; wrap.id='ahexist-'+idx;
+  if(item.type==='image' && item.src){
+    const img=document.createElement('img'); img.src=item.src; img.className='preview-thumb';
+    wrap.appendChild(img);
+    const badge=document.createElement('div'); badge.className='preview-type-badge'; badge.textContent='✓ MÖVCUD';
+    badge.style.background='rgba(45,106,79,.85)';
+    wrap.appendChild(badge);
+  } else {
+    const thumb=document.createElement('div'); thumb.className='preview-vid-thumb';
+    thumb.innerHTML='🎬<span>MÖVCUD</span>';
+    wrap.appendChild(thumb);
+  }
+  const btn=document.createElement('button'); btn.className='preview-remove'; btn.textContent='✕';
+  btn.title='Bu şəkli sil';
+  btn.onclick=e=>{
+    e.stopPropagation();
+    // Mark for removal
+    if(item.idbKey) ahRemovedExistingKeys.push(item.idbKey);
+    ahExistingMedia[idx]=null;
+    wrap.remove();
+    const remaining = ahExistingMedia.filter(x=>x!==null).length;
+    document.getElementById('ah-existing-count').textContent = remaining>0?`(${remaining} mövcud)`:'';
+  };
+  wrap.appendChild(btn);
+  container.appendChild(wrap);
+}
+
+function editHouse(id){ openAddHouseModal(id); }
+function closeAddHouseModal(){ document.getElementById('add-house-modal').classList.remove('open'); }
+
+// Handle new file uploads
+function handleAdminMedia(e){
+  Array.from(e.target.files).forEach(file=>{
+    const reader=new FileReader();
+    const isVid=file.type.startsWith('video/');
+    reader.onload=ev=>{
+      const item={type:isVid?'video':'image', src:ev.target.result, name:file.name, _isNew:true};
+      ahMedia.push(item);
+      addNewMediaPreview(item, ahMedia.length-1);
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value='';
+}
+
+function addNewMediaPreview(item, idx){
+  const container=document.getElementById('ah-media-previews');
+  const wrap=document.createElement('div'); wrap.className='preview-wrap'; wrap.id='ahnew-'+idx;
+  if(item.type==='image'){
+    const img=document.createElement('img'); img.src=item.src; img.className='preview-thumb';
+    wrap.appendChild(img);
+    const badge=document.createElement('div'); badge.className='preview-type-badge'; badge.textContent='YENI';
+    badge.style.background='rgba(201,168,76,.9)';
+    wrap.appendChild(badge);
+  } else {
+    const thumb=document.createElement('div'); thumb.className='preview-vid-thumb';
+    thumb.innerHTML='🎬<span>YENİ</span>';
+    wrap.appendChild(thumb);
+  }
+  const btn=document.createElement('button'); btn.className='preview-remove'; btn.textContent='✕';
+  btn.onclick=e=>{ e.stopPropagation(); ahMedia[idx]=null; wrap.remove(); };
+  wrap.appendChild(btn);
+  container.appendChild(wrap);
+}
+
+// ═══════════════════════════════════════════════
+//  SAVE HOUSE — persists media to IndexedDB
+// ═══════════════════════════════════════════════
+async function saveHouse(){
+  const name=document.getElementById('ah-name').value.trim();
+  const price=parseInt(document.getElementById('ah-price').value)||0;
+  const guests=parseInt(document.getElementById('ah-guests').value)||1;
+  const location=document.getElementById('ah-location').value.trim();
+  const desc=document.getElementById('ah-desc').value.trim();
+  const bookingType=document.getElementById('ah-booktype').value;
+  const editId=document.getElementById('ah-edit-id').value;
+
+  if(!name||!price||!location){ showToast('Ad, qiymət və ünvan mütləqdir.','error'); return; }
+
+  // Disable save button while saving
+  const saveBtn=document.getElementById('ah-save-btn');
+  const saveLabel=document.getElementById('ah-save-label');
+  saveBtn.disabled=true;
+  saveLabel.textContent='⏳ Saxlanır...';
+
+  try {
+    // 1. Delete removed existing media from IDB
+    for(const key of ahRemovedExistingKeys){
+      try { await idbDelete(key); } catch(e){}
+    }
+
+    // 2. Save new media to IDB and build final media array
+    const existingKept = ahExistingMedia.filter(x=>x!==null);
+    const newItems = ahMedia.filter(x=>x!==null);
+
+    // Save new items to IDB
+    const savedNewItems = [];
+    for(const item of newItems){
+      const key = 'media_'+(editId||'new')+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+      await idbPut(key, item.src);
+      savedNewItems.push({ type:item.type, name:item.name, idbKey:key, src:item.src });
+    }
+
+    // Final media array: existing kept + new saved
+    const finalMedia = [...existingKept, ...savedNewItems];
+
+    const emojis=['🏠','🏡','🏘️','🏰','🏯','🏔️'];
+    if(editId){
+      const h=houses.find(x=>x.id===editId);
+      Object.assign(h,{name,price,guests,location,desc,bookingType,media:finalMedia});
+      showToast('✅ Ev yeniləndi — şəkillər saxlanıldı!','gold');
+    } else {
+      const newHouse={
+        id:'H'+String(Date.now()).slice(-6),
+        name,price,guests,location,desc,bookingType,
+        media:finalMedia,
+        emoji:emojis[houses.length%emojis.length],
+        bookedDates:[]
+      };
+      houses.push(newHouse);
+      showToast('✅ Yeni ev əlavə edildi!','success');
+    }
+
+    saveState();
+    closeAddHouseModal();
+    renderAdminHouses();
+    renderHousesGrid();
+    updateStats();
+
+  } catch(err){
+    console.error('Save error:', err);
+    showToast('❌ Saxlama xətası: '+err.message,'error');
+  } finally {
+    saveBtn.disabled=false;
+    saveLabel.textContent='💾 Yadda Saxla';
+  }
+}
+
+async function deleteHouse(id){
+  if(!confirm('Bu evi silmək istədiyinizə əminsiniz?')) return;
+  const h = houses.find(x=>x.id===id);
+  if(h){
+    // Delete all media from IDB
+    for(const m of (h.media||[])){
+      if(m.idbKey){ try{ await idbDelete(m.idbKey); }catch(e){} }
+    }
+  }
+  houses=houses.filter(h=>h.id!==id);
+  saveState(); renderAdminHouses(); renderHousesGrid(); updateStats();
+  showToast('Ev silindi.','error');
+}
+
+// Drag-drop upload
+const uploadZone=document.getElementById('ah-upload-zone');
+uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('drag');});
+uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('drag'));
+uploadZone.addEventListener('drop',e=>{
+  e.preventDefault();uploadZone.classList.remove('drag');
+  const dt=e.dataTransfer; if(!dt) return;
+  const fakeEvt={target:{files:dt.files,value:''}};
+  handleAdminMedia(fakeEvt);
+});
+
+// ═══════════════════════════════════════════════
+//  WHATSAPP
+// ═══════════════════════════════════════════════
+function openWAModal(msg, title, prefillPhone){
+  waMsg=msg;
+  document.getElementById('wa-modal-title').textContent=title||'WhatsApp ilə göndər';
+  document.getElementById('wa-preview').innerHTML=msg.replace(/\n/g,'<br>').replace(/\*(.*?)\*/g,'<strong>$1</strong>');
+  document.getElementById('wa-number').value=prefillPhone||OWNER_WA;
+  document.getElementById('wa-modal').classList.add('open');
+}
+function closeWAModal(){ document.getElementById('wa-modal').classList.remove('open'); }
+function sendWhatsApp(){
+  const num=document.getElementById('wa-number').value.replace(/[^0-9]/g,'');
+  if(!num){ showToast('Düzgün nömrə daxil edin.','error'); return; }
+  window.open('https://wa.me/'+num+'?text='+encodeURIComponent(waMsg),'_blank');
+  closeWAModal(); showToast('📲 WhatsApp açılır...','success');
+}
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+async function init(){
+  try {
+    idb = await openIDB();
+  } catch(e){
+    console.warn('IndexedDB not available, falling back to inline src storage:', e);
+    idb = null;
+  }
+  await loadState();
+  renderHousesGrid();
+  setSyncLive();
+}
+
+init();
+
+// Periodic cross-tab poll fallback
+setInterval(async ()=>{
+  try {
+    const raw=localStorage.getItem(STORE_KEY);
+    if(!raw) return;
+    const d=JSON.parse(raw);
+    if(d.ts && d.ts!==window._lastSyncTs){
+      window._lastSyncTs=d.ts;
+      await loadState();
+      refreshVisiblePage();
+    }
+  } catch(e){}
+}, 2000);
+window._lastSyncTs = Date.now();
+</script>
+</body>
+</html>
