@@ -57,6 +57,7 @@ nav{background:var(--dark);display:flex;align-items:center;justify-content:space
 .form-group{display:flex;flex-direction:column;gap:6px;}
 .form-group.full{grid-column:1/-1;}
 label{font-size:.79rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.req-star{color:var(--danger);margin-left:2px;}
 input[type=text],input[type=number],input[type=email],input[type=password],textarea,select{
   width:100%;padding:10px 13px;background:var(--cream);border:1.5px solid var(--border);
   border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.92rem;color:var(--dark);outline:none;transition:border .2s;
@@ -410,9 +411,9 @@ textarea{resize:vertical;min-height:85px;}
       <div class="card">
         <div class="card-title">👤 Qonaq Məlumatları</div>
         <div class="form-grid">
-          <div class="form-group"><label>Ad</label><input type="text" id="guest-first" placeholder="Aytən"></div>
+          <div class="form-group"><label>Ad<span class="req-star">*</span></label><input type="text" id="guest-first" placeholder="Aytən"></div>
           <div class="form-group"><label>Soyad</label><input type="text" id="guest-last" placeholder="Hüseynova"></div>
-          <div class="form-group full"><label>Telefon / WhatsApp</label><input type="text" id="guest-phone" placeholder="+994501234567"></div>
+          <div class="form-group full"><label>Telefon / WhatsApp<span class="req-star">*</span></label><input type="text" id="guest-phone" placeholder="+994501234567"></div>
           <div class="form-group full"><label>E-poçt</label><input type="email" id="guest-email" placeholder="ayten@mail.com"></div>
           <div class="form-group"><label>Qonaq Sayı</label><input type="number" id="guest-count" value="2" min="1"></div>
           <div class="form-group full"><label>Xüsusi İstəklər</label><textarea id="guest-requests" placeholder="Erkən giriş, uşaq çarpayısı..."></textarea></div>
@@ -911,7 +912,7 @@ async function submitBooking(type){
   const first=document.getElementById('guest-first').value.trim();
   const last=document.getElementById('guest-last').value.trim();
   const phone=document.getElementById('guest-phone').value.trim();
-  if(!first||!last||!phone){ showToast('Ad, soyad və telefon daxil edin.','error'); return; }
+  if(!first||!phone){ showToast('Ad və telefon daxil edin.','error'); return; }
   const h=houses.find(x=>x.id===selectedHouseId);
   const nights=Math.round((selEnd-selStart)/86400000);
   const total=nights*(h?h.price:0);
@@ -932,7 +933,7 @@ async function submitBooking(type){
   if(error){ showToast('❌ Xəta: '+error.message,'error'); return; }
   await loadHouses();
 
-  const guestName = first+' '+last;
+  const guestName = [first,last].filter(Boolean).join(' ');
   const msg = type==='instant'
     ?`✅ *Ani Rezervasiya Təsdiqləndi!*\n\n🏠 *${h?h.name:'Ev'}*\n👤 Qonaq: ${guestName}\n📞 Telefon: ${phone}\n📅 Giriş: ${prettyDate(selStart)}\n📅 Çıxış: ${prettyDate(selEnd)}\n🌙 Gecə: ${nights}\n💰 Cəmi: ${total} AZN\n👥 Qonaq sayı: ${guestsCount}\n📝 Xüsusi istək: ${requestsVal||'Yoxdur'}\n\n_Zəhmət olmasa ödəniş linkini göndərin._`
     :`📨 *Yeni Rezervasiya Sorğusu!*\n\n🏠 *${h?h.name:'Ev'}*\n👤 Qonaq: ${guestName}\n📞 Telefon: ${phone}\n📅 Giriş: ${prettyDate(selStart)}\n📅 Çıxış: ${prettyDate(selEnd)}\n🌙 Gecə: ${nights}\n💰 Cəmi: ${total} AZN\n👥 Qonaq sayı: ${guestsCount}\n📝 Xüsusi istək: ${requestsVal||'Yoxdur'}\n\n_Zəhmət olmasa təsdiqləyin._`;
