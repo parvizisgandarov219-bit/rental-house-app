@@ -2,8 +2,17 @@
 <html lang="az">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>EvKirayə — Azərbaycan</title>
+<meta name="description" content="Kirayə evlər — axtar, rezervasiya et, idarə et.">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A1714">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EvKirayə">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -495,16 +504,19 @@ textarea{resize:vertical;min-height:85px;}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
+
 // ═══════════════════════════════════════════════
-//  CONSTANTS
+//  SUPABASE CONFIG
 // ═══════════════════════════════════════════════
-const ADMIN_PASS = '1987';
-const OWNER_WA   = '+994501234567';
-const STORE_KEY  = 'evkiraye_data_v4';
-const IDB_NAME   = 'evkiraye_media';
-const IDB_STORE  = 'media';
-const IDB_VER    = 1;
+const SUPABASE_URL = 'https://hffhmbxwczxtluqyztfu.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhmZmhtYnh3Y3p4dGx1cXl6dGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1ODEzNjgsImV4cCI6MjEwNjE1NzM2OH0.HM_dJMNrXQB8Zmy4Nuj45HWKucd9QYlxPRnFsb2XEzQ';
+const ADMIN_EMAIL   = 'parviz.isgandarov219@gmail.com';
+const OWNER_WA       = '+994501234567';
+const MEDIA_BUCKET   = 'house-media';
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const MONTHS_AZ = ['Yanvar','Fevral','Mart','Aprel','May','İyun','İyul','Avqust','Sentyabr','Oktyabr','Noyabr','Dekabr'];
 const DAYS_AZ   = ['B','B.e','Ç.a','Ç','C.a','C','Ş'];
@@ -518,167 +530,78 @@ let currentFilter = 'all';
 let lbMedia = [];
 let lbIndex = 0;
 
-// ahMedia: array of {type, src, name, idbKey?}
-// ahExistingMedia: existing media items for current edit (kept from house.media)
+// ahMedia: array of {type, src, name, _file} (new uploads, not yet saved)
+// ahExistingMedia: existing media items for current edit (kept from house.media, src = public URL)
 let ahMedia = [];
-let ahExistingMedia = []; // kept existing items
-let ahRemovedExistingKeys = []; // idbKeys to delete on save
-
-// ═══════════════════════════════════════════════
-//  INDEXEDDB — persists large base64 media
-// ═══════════════════════════════════════════════
-let idb = null;
-
-function openIDB(){
-  return new Promise((resolve, reject)=>{
-    const req = indexedDB.open(IDB_NAME, IDB_VER);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if(!db.objectStoreNames.contains(IDB_STORE)){
-        db.createObjectStore(IDB_STORE, {keyPath:'key'});
-      }
-    };
-    req.onsuccess = e => resolve(e.target.result);
-    req.onerror   = e => reject(e.target.error);
-  });
-}
-
-async function idbPut(key, value){
-  const tx = idb.transaction(IDB_STORE,'readwrite');
-  const store = tx.objectStore(IDB_STORE);
-  return new Promise((res,rej)=>{
-    const r = store.put({key, value});
-    r.onsuccess = ()=>res();
-    r.onerror   = ()=>rej(r.error);
-  });
-}
-
-async function idbGet(key){
-  const tx = idb.transaction(IDB_STORE,'readonly');
-  const store = tx.objectStore(IDB_STORE);
-  return new Promise((res,rej)=>{
-    const r = store.get(key);
-    r.onsuccess = ()=>res(r.result ? r.result.value : null);
-    r.onerror   = ()=>rej(r.error);
-  });
-}
-
-async function idbDelete(key){
-  const tx = idb.transaction(IDB_STORE,'readwrite');
-  const store = tx.objectStore(IDB_STORE);
-  return new Promise((res,rej)=>{
-    const r = store.delete(key);
-    r.onsuccess = ()=>res();
-    r.onerror   = ()=>rej(r.error);
-  });
-}
-
-// Hydrate all houses by loading their media srcs from IndexedDB
-async function hydrateHouses(houseList){
-  for(const h of houseList){
-    if(!h.media) h.media=[];
-    const hydrated = [];
-    for(const m of h.media){
-      if(m.idbKey){
-        const src = await idbGet(m.idbKey);
-        if(src) hydrated.push({...m, src});
-        else hydrated.push(m); // fallback if key missing
-      } else {
-        hydrated.push(m);
-      }
-    }
-    h.media = hydrated;
-  }
-  return houseList;
-}
-
-// Strip src before saving to localStorage (save only idbKey references)
-function dehydrateHouses(houseList){
-  return houseList.map(h=>({
-    ...h,
-    media: (h.media||[]).map(m=>{
-      if(m.idbKey) return {type:m.type, name:m.name, idbKey:m.idbKey};
-      // inline src (small or no idbKey) — keep as-is
-      return m;
-    })
-  }));
-}
+let ahExistingMedia = [];
+let ahRemovedExistingUrls = []; // urls to delete from storage on save
 
 // ═══════════════════════════════════════════════
 //  APP STATE
 // ═══════════════════════════════════════════════
 let houses = [];
-let reservations = [];
-
-const DEFAULT_HOUSES = [
-  { id:'H001', name:'Bakı Dəniz Kənarı Villa', price:200, guests:8,
-    location:'Bakı, Biləcəri', desc:'Xəzər dənizinə nəzər salan möhtəşəm villa. 4 otaq, özəl hovuz, tam avadanlıqlı mətbəx.',
-    media:[], emoji:'🌊', bookingType:'request',
-    bookedDates:['2025-06-10','2025-06-11','2025-06-12','2025-07-05','2025-07-06'] },
-  { id:'H002', name:'Şəhər Mərkəzi Mənzil', price:120, guests:4,
-    location:'Bakı, Nərimanov', desc:'Şəhər mərkəzində, metro stansiyasına yaxın 2 otaqlı mənzil. WiFi, kondisioner.',
-    media:[], emoji:'🏙️', bookingType:'instant',
-    bookedDates:['2025-06-20','2025-06-21','2025-06-22'] },
-  { id:'H003', name:'Qəbələ Dağ Evi', price:180, guests:10,
-    location:'Qəbələ, Azərbaycan', desc:'Dağ mənzərəli, 5 otaqlı istirahət evi. Barbekü, həyət, meşəyə yaxın.',
-    media:[], emoji:'🏔️', bookingType:'request',
-    bookedDates:['2025-07-10','2025-07-11','2025-07-12'] }
-];
-
-const DEFAULT_RESERVATIONS = [
-  {id:'R001',houseId:'H001',guest:'Leyla Hüseynova',phone:'+994502345678',email:'leyla@mail.com',checkin:'2025-06-10',checkout:'2025-06-12',nights:2,total:400,status:'approved',requests:'Gec giriş',guests:3},
-  {id:'R002',houseId:'H002',guest:'Kamran Əliyev',phone:'+994703456789',email:'kamran@mail.com',checkin:'2025-06-20',checkout:'2025-06-22',nights:2,total:240,status:'pending',requests:'',guests:2},
-  {id:'R003',houseId:'H003',guest:'Səba Məmmədova',phone:'+994554567890',email:'seba@mail.com',checkin:'2025-07-10',checkout:'2025-07-13',nights:3,total:540,status:'pending',requests:'Uşaq çarpayısı',guests:5}
-];
+let reservations = []; // full data — only populated for logged-in admin
 
 // ═══════════════════════════════════════════════
-//  SAVE / LOAD
+//  DB <-> APP MAPPERS
 // ═══════════════════════════════════════════════
-function saveState(){
-  // Save metadata (without large src blobs) to localStorage
-  const dehydrated = dehydrateHouses(houses);
-  const payload = { houses: dehydrated, reservations, ts: Date.now() };
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(payload)); } catch(e){
-    console.warn('localStorage save failed', e);
-  }
-  if(bc) bc.postMessage({ type:'update' });
-}
-
-async function loadState(){
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if(raw){
-      const d = JSON.parse(raw);
-      if(d.houses) houses = d.houses;
-      if(d.reservations) reservations = d.reservations;
-      // Hydrate: load media srcs from IDB
-      houses = await hydrateHouses(houses);
-    } else {
-      houses = JSON.parse(JSON.stringify(DEFAULT_HOUSES));
-      reservations = JSON.parse(JSON.stringify(DEFAULT_RESERVATIONS));
-    }
-  } catch(e){
-    console.warn('loadState error', e);
-    houses = JSON.parse(JSON.stringify(DEFAULT_HOUSES));
-    reservations = JSON.parse(JSON.stringify(DEFAULT_RESERVATIONS));
-  }
-}
-
-// ═══════════════════════════════════════════════
-//  BROADCAST (cross-tab sync)
-// ═══════════════════════════════════════════════
-let bc;
-try { bc = new BroadcastChannel('evkiraye_sync'); } catch(e){ bc = null; }
-if(bc){
-  bc.onmessage = async e => {
-    if(e.data && e.data.type === 'update'){
-      await loadState();
-      refreshVisiblePage();
-      flashSyncBanner();
-    }
+function mapHouse(row){
+  return {
+    id: row.id, name: row.name, price: Number(row.price), guests: row.guests,
+    location: row.location||'', desc: row.description||'', bookingType: row.booking_type||'instant',
+    emoji: row.emoji||'🏠',
+    media: (row.media||[]).map(m=>({type:m.type, src:m.url, name:m.name})),
+    bookedDates: []
   };
 }
+function mapReservation(row){
+  return {
+    id: row.id, houseId: row.house_id,
+    guest: [row.guest_first,row.guest_last].filter(Boolean).join(' '),
+    phone: row.phone||'', email: row.email||'',
+    checkin: row.checkin, checkout: row.checkout,
+    nights: row.nights, total: Number(row.total),
+    status: row.status, requests: row.requests||'', guests: row.guests||1
+  };
+}
+function expandRange(checkin, checkout){
+  const out=[]; let d=new Date(checkin+'T00:00:00');
+  const end=new Date(checkout+'T00:00:00');
+  while(d<end){ out.push(fmtDate(d)); d.setDate(d.getDate()+1); }
+  return out;
+}
+function extractStoragePath(url){
+  if(!url) return null;
+  const marker = '/'+MEDIA_BUCKET+'/';
+  const idx = url.indexOf(marker);
+  if(idx===-1) return null;
+  return url.slice(idx+marker.length);
+}
 
+// ═══════════════════════════════════════════════
+//  LOAD DATA FROM SUPABASE
+// ═══════════════════════════════════════════════
+async function loadHouses(){
+  const {data, error} = await sb.from('houses').select('*').order('created_at',{ascending:true});
+  if(error){ console.warn('loadHouses', error); return; }
+  const mapped = (data||[]).map(mapHouse);
+  const {data: avail} = await sb.from('house_availability').select('house_id,checkin,checkout');
+  (avail||[]).forEach(a=>{
+    const h = mapped.find(x=>x.id===a.house_id);
+    if(h) h.bookedDates.push(...expandRange(a.checkin, a.checkout));
+  });
+  houses = mapped;
+}
+async function loadAdminReservations(){
+  if(!isAdmin){ reservations = []; return; }
+  const {data, error} = await sb.from('reservations').select('*').order('created_at',{ascending:false});
+  if(error){ console.warn('loadAdminReservations', error); reservations=[]; return; }
+  reservations = (data||[]).map(mapReservation);
+}
+
+// ═══════════════════════════════════════════════
+//  SYNC UI (realtime status pill + banner)
+// ═══════════════════════════════════════════════
 function flashSyncBanner(){
   const b = document.getElementById('sync-banner');
   b.classList.add('show');
@@ -688,11 +611,15 @@ function setSyncLive(){
   document.getElementById('sync-dot').classList.add('live');
   document.getElementById('sync-label').textContent = 'Canlı sinxron';
 }
+function setSyncOffline(){
+  document.getElementById('sync-dot').classList.remove('live');
+  document.getElementById('sync-label').textContent = 'Oflayn';
+}
 function refreshVisiblePage(){
   const activePage = document.querySelector('.page.active');
   if(!activePage) return;
   if(activePage.id==='page-evler') renderHousesGrid();
-  if(activePage.id==='page-admin'&&isAdmin){ updateStats(); renderReservations(); renderAdminHouses(); }
+  if(activePage.id==='page-admin' && isAdmin){ updateStats(); renderReservations(); renderAdminHouses(); }
   if(activePage.id==='page-booking') renderCalendar();
 }
 
@@ -841,11 +768,13 @@ function openHouseGalleryCard(houseId){
 // ═══════════════════════════════════════════════
 //  SELECT HOUSE → BOOKING PAGE
 // ═══════════════════════════════════════════════
-function selectHouse(houseId){
+async function selectHouse(houseId){
   selectedHouseId = houseId;
   selStart = null; selEnd = null;
   cal.month = new Date().getMonth(); cal.year = new Date().getFullYear();
+  await loadHouses(); // refresh availability so the calendar is always current
   const h = houses.find(x=>x.id===houseId);
+  if(!h) return;
   document.getElementById('booking-house-name').textContent = h.name;
   document.getElementById('booking-house-sub').textContent = '📍 '+h.location+' · '+h.price+' AZN/gecə';
 
@@ -977,7 +906,7 @@ function updateSummary(){
 // ═══════════════════════════════════════════════
 //  SUBMIT BOOKING
 // ═══════════════════════════════════════════════
-function submitBooking(type){
+async function submitBooking(type){
   if(!selStart||!selEnd){ showToast('Zəhmət olmasa tarixləri seçin.','error'); return; }
   const first=document.getElementById('guest-first').value.trim();
   const last=document.getElementById('guest-last').value.trim();
@@ -986,24 +915,27 @@ function submitBooking(type){
   const h=houses.find(x=>x.id===selectedHouseId);
   const nights=Math.round((selEnd-selStart)/86400000);
   const total=nights*(h?h.price:0);
-  const newRes={
-    id:'R'+String(Date.now()).slice(-6),
-    houseId:selectedHouseId,
-    guest:first+' '+last, phone,
-    email:document.getElementById('guest-email').value,
-    checkin:fmtDate(selStart), checkout:fmtDate(selEnd),
+  const guestsCount = parseInt(document.getElementById('guest-count').value)||1;
+  const requestsVal = document.getElementById('guest-requests').value;
+  const emailVal = document.getElementById('guest-email').value;
+  const payload = {
+    house_id: selectedHouseId,
+    guest_first: first, guest_last: last, phone,
+    email: emailVal,
+    checkin: fmtDate(selStart), checkout: fmtDate(selEnd),
     nights, total,
-    guests:parseInt(document.getElementById('guest-count').value)||1,
-    requests:document.getElementById('guest-requests').value,
-    status:type==='instant'?'approved':'pending'
+    guests: guestsCount,
+    requests: requestsVal,
+    status: type==='instant' ? 'approved' : 'pending'
   };
-  let d=new Date(selStart);
-  while(d<selEnd){ if(h)h.bookedDates.push(fmtDate(d)); d.setDate(d.getDate()+1); }
-  reservations.unshift(newRes);
-  saveState(); updateStats();
-  const msg=type==='instant'
-    ?`✅ *Ani Rezervasiya Təsdiqləndi!*\n\n🏠 *${h?h.name:'Ev'}*\n👤 Qonaq: ${newRes.guest}\n📞 Telefon: ${phone}\n📅 Giriş: ${prettyDate(selStart)}\n📅 Çıxış: ${prettyDate(selEnd)}\n🌙 Gecə: ${nights}\n💰 Cəmi: ${total} AZN\n👥 Qonaq sayı: ${newRes.guests}\n📝 Xüsusi istək: ${newRes.requests||'Yoxdur'}\n\n_Zəhmət olmasa ödəniş linkini göndərin._`
-    :`📨 *Yeni Rezervasiya Sorğusu!*\n\n🏠 *${h?h.name:'Ev'}*\n👤 Qonaq: ${newRes.guest}\n📞 Telefon: ${phone}\n📅 Giriş: ${prettyDate(selStart)}\n📅 Çıxış: ${prettyDate(selEnd)}\n🌙 Gecə: ${nights}\n💰 Cəmi: ${total} AZN\n👥 Qonaq sayı: ${newRes.guests}\n📝 Xüsusi istək: ${newRes.requests||'Yoxdur'}\n\n_Zəhmət olmasa təsdiqləyin._`;
+  const {error} = await sb.from('reservations').insert(payload);
+  if(error){ showToast('❌ Xəta: '+error.message,'error'); return; }
+  await loadHouses();
+
+  const guestName = first+' '+last;
+  const msg = type==='instant'
+    ?`✅ *Ani Rezervasiya Təsdiqləndi!*\n\n🏠 *${h?h.name:'Ev'}*\n👤 Qonaq: ${guestName}\n📞 Telefon: ${phone}\n📅 Giriş: ${prettyDate(selStart)}\n📅 Çıxış: ${prettyDate(selEnd)}\n🌙 Gecə: ${nights}\n💰 Cəmi: ${total} AZN\n👥 Qonaq sayı: ${guestsCount}\n📝 Xüsusi istək: ${requestsVal||'Yoxdur'}\n\n_Zəhmət olmasa ödəniş linkini göndərin._`
+    :`📨 *Yeni Rezervasiya Sorğusu!*\n\n🏠 *${h?h.name:'Ev'}*\n👤 Qonaq: ${guestName}\n📞 Telefon: ${phone}\n📅 Giriş: ${prettyDate(selStart)}\n📅 Çıxış: ${prettyDate(selEnd)}\n🌙 Gecə: ${nights}\n💰 Cəmi: ${total} AZN\n👥 Qonaq sayı: ${guestsCount}\n📝 Xüsusi istək: ${requestsVal||'Yoxdur'}\n\n_Zəhmət olmasa təsdiqləyin._`;
   const num = OWNER_WA.replace(/[^0-9]/g,'');
   setTimeout(()=>{ window.open('https://wa.me/'+num+'?text='+encodeURIComponent(msg),'_blank'); }, 600);
   selStart=null; selEnd=null;
@@ -1016,29 +948,34 @@ function submitBooking(type){
 }
 
 // ═══════════════════════════════════════════════
-//  ADMIN
+//  ADMIN AUTH
 // ═══════════════════════════════════════════════
-function adminLogin(){
-  if(document.getElementById('admin-pass').value===ADMIN_PASS){
-    isAdmin=true;
-    document.getElementById('admin-login-wrap').style.display='none';
-    document.getElementById('admin-panel').style.display='block';
-    document.getElementById('admin-pass').value='';
-    document.getElementById('admin-login-err').style.display='none';
-    renderAdmin();
-  } else {
+async function adminLogin(){
+  const pass = document.getElementById('admin-pass').value;
+  const {error} = await sb.auth.signInWithPassword({ email: ADMIN_EMAIL, password: pass });
+  if(error){
     document.getElementById('admin-login-err').style.display='block';
     document.getElementById('admin-pass').value='';
     document.getElementById('admin-pass').focus();
+    return;
   }
+  isAdmin = true;
+  document.getElementById('admin-pass').value='';
+  document.getElementById('admin-login-err').style.display='none';
+  await loadAdminReservations();
+  renderAdmin();
 }
-function adminLogout(){
-  isAdmin=false;
+async function adminLogout(){
+  await sb.auth.signOut();
+  isAdmin = false;
+  reservations = [];
   document.getElementById('admin-login-wrap').style.display='flex';
   document.getElementById('admin-panel').style.display='none';
 }
 function renderAdmin(){
   if(!isAdmin){ document.getElementById('admin-login-wrap').style.display='flex'; document.getElementById('admin-panel').style.display='none'; return; }
+  document.getElementById('admin-login-wrap').style.display='none';
+  document.getElementById('admin-panel').style.display='block';
   updateStats(); renderReservations(); renderAdminHouses();
 }
 function adminTab(tab, el){
@@ -1088,9 +1025,13 @@ function filterRes(filter, el){
   el.style.borderColor='var(--gold)'; el.style.color='var(--gold)';
   renderReservations(filter);
 }
-function changeStatus(id, status){
+async function changeStatus(id, status){
   const r=reservations.find(x=>x.id===id); if(!r)return;
-  r.status=status; saveState(); updateStats(); renderReservations();
+  const {error} = await sb.from('reservations').update({status}).eq('id', id);
+  if(error){ showToast('❌ Xəta: '+error.message,'error'); return; }
+  r.status=status;
+  await loadHouses();
+  updateStats(); renderReservations();
   const h=houses.find(x=>x.id===r.houseId);
   if(status==='approved'){
     const msg=`✅ *Rezervasiyanız Təsdiqləndi!*\n\n🏠 ${h?h.name:'Ev'}\n👤 ${r.guest}\n📅 ${r.checkin} → ${r.checkout}\n💰 Cəmi: ${r.total} AZN\n\n_Ödəniş linki tezliklə göndəriləcək._`;
@@ -1166,7 +1107,7 @@ function adminPreviewMedia(houseId){
 function openAddHouseModal(editId){
   ahMedia = [];
   ahExistingMedia = [];
-  ahRemovedExistingKeys = [];
+  ahRemovedExistingUrls = [];
   document.getElementById('ah-media-previews').innerHTML='';
   document.getElementById('ah-existing-previews').innerHTML='';
   document.getElementById('ah-existing-count').textContent='';
@@ -1181,7 +1122,6 @@ function openAddHouseModal(editId){
     document.getElementById('ah-desc').value=h.desc;
     document.getElementById('ah-booktype').value=h.bookingType;
     document.getElementById('ah-edit-id').value=editId;
-    // Copy existing media — keep all, user can remove individually
     ahExistingMedia = (h.media||[]).map((m,i)=>({...m, _existingIdx:i}));
     if(ahExistingMedia.length){
       document.getElementById('ah-existing-count').textContent=`(${ahExistingMedia.length} mövcud)`;
@@ -1216,8 +1156,7 @@ function addExistingPreview(item, idx){
   btn.title='Bu şəkli sil';
   btn.onclick=e=>{
     e.stopPropagation();
-    // Mark for removal
-    if(item.idbKey) ahRemovedExistingKeys.push(item.idbKey);
+    if(item.src) ahRemovedExistingUrls.push(item.src);
     ahExistingMedia[idx]=null;
     wrap.remove();
     const remaining = ahExistingMedia.filter(x=>x!==null).length;
@@ -1230,13 +1169,13 @@ function addExistingPreview(item, idx){
 function editHouse(id){ openAddHouseModal(id); }
 function closeAddHouseModal(){ document.getElementById('add-house-modal').classList.remove('open'); }
 
-// Handle new file uploads
+// Handle new file uploads (preview only — actual upload happens on save)
 function handleAdminMedia(e){
   Array.from(e.target.files).forEach(file=>{
     const reader=new FileReader();
     const isVid=file.type.startsWith('video/');
     reader.onload=ev=>{
-      const item={type:isVid?'video':'image', src:ev.target.result, name:file.name, _isNew:true};
+      const item={type:isVid?'video':'image', src:ev.target.result, name:file.name, _isNew:true, _file:file};
       ahMedia.push(item);
       addNewMediaPreview(item, ahMedia.length-1);
     };
@@ -1266,7 +1205,7 @@ function addNewMediaPreview(item, idx){
 }
 
 // ═══════════════════════════════════════════════
-//  SAVE HOUSE — persists media to IndexedDB
+//  SAVE HOUSE — uploads media to Supabase Storage, writes row to DB
 // ═══════════════════════════════════════════════
 async function saveHouse(){
   const name=document.getElementById('ah-name').value.trim();
@@ -1279,51 +1218,52 @@ async function saveHouse(){
 
   if(!name||!price||!location){ showToast('Ad, qiymət və ünvan mütləqdir.','error'); return; }
 
-  // Disable save button while saving
   const saveBtn=document.getElementById('ah-save-btn');
   const saveLabel=document.getElementById('ah-save-label');
   saveBtn.disabled=true;
   saveLabel.textContent='⏳ Saxlanır...';
 
   try {
-    // 1. Delete removed existing media from IDB
-    for(const key of ahRemovedExistingKeys){
-      try { await idbDelete(key); } catch(e){}
-    }
+    const houseId = editId || crypto.randomUUID();
 
-    // 2. Save new media to IDB and build final media array
-    const existingKept = ahExistingMedia.filter(x=>x!==null);
+    // 1. Upload new files to Supabase Storage
     const newItems = ahMedia.filter(x=>x!==null);
-
-    // Save new items to IDB
-    const savedNewItems = [];
+    const uploadedItems = [];
     for(const item of newItems){
-      const key = 'media_'+(editId||'new')+'_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
-      await idbPut(key, item.src);
-      savedNewItems.push({ type:item.type, name:item.name, idbKey:key, src:item.src });
+      const safeName = item.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const path = houseId+'/'+Date.now()+'_'+Math.random().toString(36).slice(2,7)+'_'+safeName;
+      const {error: upErr} = await sb.storage.from(MEDIA_BUCKET).upload(path, item._file, {upsert:true, contentType:item._file.type});
+      if(upErr) throw upErr;
+      const {data:urlData} = sb.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+      uploadedItems.push({type:item.type, url:urlData.publicUrl, name:item.name});
     }
 
-    // Final media array: existing kept + new saved
-    const finalMedia = [...existingKept, ...savedNewItems];
+    // 2. Best-effort delete of removed existing media from storage
+    for(const url of ahRemovedExistingUrls){
+      const path = extractStoragePath(url);
+      if(path){ try{ await sb.storage.from(MEDIA_BUCKET).remove([path]); }catch(e){} }
+    }
+
+    // 3. Build final media array (existing kept + new uploads)
+    const existingKept = ahExistingMedia.filter(x=>x!==null).map(m=>({type:m.type, url:m.src, name:m.name}));
+    const finalMedia = [...existingKept, ...uploadedItems];
 
     const emojis=['🏠','🏡','🏘️','🏰','🏯','🏔️'];
+    const dbPayload = { name, price, guests, location, description:desc, booking_type:bookingType, media:finalMedia };
+
     if(editId){
-      const h=houses.find(x=>x.id===editId);
-      Object.assign(h,{name,price,guests,location,desc,bookingType,media:finalMedia});
+      const {error} = await sb.from('houses').update(dbPayload).eq('id', editId);
+      if(error) throw error;
       showToast('✅ Ev yeniləndi — şəkillər saxlanıldı!','gold');
     } else {
-      const newHouse={
-        id:'H'+String(Date.now()).slice(-6),
-        name,price,guests,location,desc,bookingType,
-        media:finalMedia,
-        emoji:emojis[houses.length%emojis.length],
-        bookedDates:[]
-      };
-      houses.push(newHouse);
+      dbPayload.id = houseId;
+      dbPayload.emoji = emojis[houses.length % emojis.length];
+      const {error} = await sb.from('houses').insert(dbPayload);
+      if(error) throw error;
       showToast('✅ Yeni ev əlavə edildi!','success');
     }
 
-    saveState();
+    await loadHouses();
     closeAddHouseModal();
     renderAdminHouses();
     renderHousesGrid();
@@ -1331,7 +1271,7 @@ async function saveHouse(){
 
   } catch(err){
     console.error('Save error:', err);
-    showToast('❌ Saxlama xətası: '+err.message,'error');
+    showToast('❌ Saxlama xətası: '+(err.message||err),'error');
   } finally {
     saveBtn.disabled=false;
     saveLabel.textContent='💾 Yadda Saxla';
@@ -1342,13 +1282,13 @@ async function deleteHouse(id){
   if(!confirm('Bu evi silmək istədiyinizə əminsiniz?')) return;
   const h = houses.find(x=>x.id===id);
   if(h){
-    // Delete all media from IDB
-    for(const m of (h.media||[])){
-      if(m.idbKey){ try{ await idbDelete(m.idbKey); }catch(e){} }
-    }
+    const paths = (h.media||[]).map(m=>extractStoragePath(m.src)).filter(Boolean);
+    if(paths.length){ try{ await sb.storage.from(MEDIA_BUCKET).remove(paths); }catch(e){} }
   }
-  houses=houses.filter(h=>h.id!==id);
-  saveState(); renderAdminHouses(); renderHousesGrid(); updateStats();
+  const {error} = await sb.from('houses').delete().eq('id', id);
+  if(error){ showToast('❌ Xəta: '+error.message,'error'); return; }
+  await loadHouses();
+  renderAdminHouses(); renderHousesGrid(); updateStats();
   showToast('Ev silindi.','error');
 }
 
@@ -1382,36 +1322,45 @@ function sendWhatsApp(){
 }
 
 // ═══════════════════════════════════════════════
-//  INIT
+//  INIT + REALTIME SYNC
 // ═══════════════════════════════════════════════
 async function init(){
-  try {
-    idb = await openIDB();
-  } catch(e){
-    console.warn('IndexedDB not available, falling back to inline src storage:', e);
-    idb = null;
+  const {data:{session}} = await sb.auth.getSession();
+  if(session && session.user && session.user.email===ADMIN_EMAIL){
+    isAdmin = true;
   }
-  await loadState();
+  await loadHouses();
+  if(isAdmin) await loadAdminReservations();
   renderHousesGrid();
+  if(document.querySelector('.page.active')?.id==='page-admin') renderAdmin();
   setSyncLive();
+
+  sb.auth.onAuthStateChange((event)=>{
+    if(event==='SIGNED_OUT'){ isAdmin=false; reservations=[]; }
+  });
+
+  sb.channel('public-houses-changes')
+    .on('postgres_changes', {event:'*', schema:'public', table:'houses'}, async ()=>{
+      await loadHouses();
+      refreshVisiblePage();
+      flashSyncBanner();
+    })
+    .subscribe(status=>{ if(status==='SUBSCRIBED') setSyncLive(); if(status==='CLOSED'||status==='CHANNEL_ERROR') setSyncOffline(); });
+
+  sb.channel('public-reservations-changes')
+    .on('postgres_changes', {event:'*', schema:'public', table:'reservations'}, async ()=>{
+      if(isAdmin){ await loadAdminReservations(); updateStats(); renderReservations(); }
+    })
+    .subscribe();
 }
 
 init();
 
-// Periodic cross-tab poll fallback
-setInterval(async ()=>{
-  try {
-    const raw=localStorage.getItem(STORE_KEY);
-    if(!raw) return;
-    const d=JSON.parse(raw);
-    if(d.ts && d.ts!==window._lastSyncTs){
-      window._lastSyncTs=d.ts;
-      await loadState();
-      refreshVisiblePage();
-    }
-  } catch(e){}
-}, 2000);
-window._lastSyncTs = Date.now();
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(e=>console.warn('SW register failed', e));
+  });
+}
 </script>
 </body>
 </html>
